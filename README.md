@@ -38,9 +38,13 @@ operation that did not happen.
 | `search_company` | read | Firmographic enrichment from a domain or name | **Implemented** |
 | `search_contact` | read | People enrichment from a name and company | **Implemented** |
 | `server_info` | read | Report available capabilities and system health | **Implemented** |
-| `crm_query` | read | Query CRM records with bounded, typed filters | Planned |
-| `save_to_list` | write | Add an existing contact to a GTM list | Planned |
-| `sync_to_crm` | write | Upsert enriched data into the CRM | Planned |
+| `crm_query` | read | Query CRM contacts with bounded, typed filters | **Implemented** |
+| `sync_to_crm` | write | Upsert one contact into the CRM, guarded and audited | **Implemented** |
+| `save_to_list` | write | Add an existing contact to a GTM list | **Implemented** |
+
+Write tools are **disabled by default**. They stay listed and callable, and refuse each
+mutation with an audited, explained `rejected` result until an operator sets
+`GTM_ENABLE_WRITE_TOOLS=true`. See [Write safety](#write-safety).
 
 ## Engineering highlights
 
@@ -53,7 +57,11 @@ operation that did not happen.
   No call site can set it to `True` after a failure. A dry run is explicitly not a success.
 - Guardrail configuration is immutable at runtime and rejects unknown keys, so a typo in an
   environment variable fails loudly rather than silently disabling a safety check.
-- Every write attempt is audited, including the ones that were rejected or failed.
+- Every write attempt is audited, including the ones that were rejected or failed, and a
+  sink that cannot record one escalates rather than letting an unauditable write pass.
+- All three write controls are enforced in a single function, which is the only caller of a
+  repository write method in the codebase — a structural test fails the build if a second
+  route appears.
 
 **Tool definitions written for a model.** Descriptions state when *not* to call a tool;
 parameters carry descriptions and real constraints; errors are split into "the agent can fix
@@ -174,12 +182,53 @@ Every setting is optional and read from `GTM_`-prefixed environment variables or
 | `GTM_ENRICHMENT_PROVIDER` | `sample` | `hunter` for live enrichment; needs an API key |
 | `GTM_ENRICHMENT_API_KEY` | unset | Provider credential; header-only, never logged |
 | `GTM_ENRICHMENT_MAX_RETRIES` | `2` | Extra attempts on 5xx or a timeout. Never on a rejection |
-| `GTM_ENABLE_WRITE_TOOLS` | `true` | `false` runs a strictly read-only deployment |
+| `GTM_ENABLE_WRITE_TOOLS` | `false` | Off by default; `true` allows CRM mutations |
 | `GTM_DRY_RUN_WRITES` | `false` | `true` validates and audits without persisting |
+| `GTM_MAX_WRITE_BATCH_SIZE` | `1` | Records one write call may modify (1-25) |
 | `GTM_TRANSPORT` | `stdio` | `streamable-http` for remote hosting |
 | `GTM_LOG_FORMAT` | `json` | `console` for readable local development logs |
 
 Logs always go to **stderr**; stdout is reserved for the JSON-RPC stream.
+
+## Write safety
+
+The two write tools reach persistence through a single guarded path
+(`CrmService._execute_write`), which is the only caller of a repository write method in the
+codebase. Each control below is covered by tests that prove it *blocks* something, at the
+service layer, through a real MCP session, and against PostgreSQL.
+
+| Control | Default | What happens |
+| --- | --- | --- |
+| `enable_write_tools` | **false** | Outcome `rejected`. Nothing is attempted; the attempt is still audited, and the message tells the agent an operator must enable writes. |
+| `dry_run_writes` | `false` | Outcome `dry_run` after full validation, including preconditions. No repository write is called. Audited with `dry_run=true`. **`dry_run` is not a success.** |
+| `max_write_batch_size` | `1` | Requests above the limit are `rejected`. Checked at one chokepoint, so a future batch tool cannot bypass it. |
+
+**Outcomes.** Every write returns a `WriteResult` whose `success` is *computed* from
+`outcome`, so it cannot be set independently: `created` / `updated` / `unchanged` are done,
+`dry_run` / `rejected` / `failed` are not.
+
+**Auditing.** Every attempt produces exactly one `AuditEvent` — successes, refusals, dry
+runs and failures alike — carrying the tool, operation, outcome, target, changed fields, MCP
+request id, error code, dry-run flag and a small bag of non-sensitive details. Known
+sensitive keys (email, phone, credentials) are redacted on the event itself, so a careless
+call site cannot leak one into the trail.
+
+**Idempotency.** Contacts upsert on normalised email (D-014); list membership is unique per
+`(list, contact)` in the database. Syncing the same contact twice gives `created` then
+`unchanged`; adding to a list twice gives `created` then `unchanged`. No duplicate rows.
+
+**Conflict policy.** CRM-curated values win over submitted ones, and a field you omit is
+never cleared (D-015). Submissions are always stamped with enrichment provenance, so an
+agent cannot declare its own guess authoritative (D-021).
+
+**Non-destructive.** There is no delete: not on the repository port, not in the audit
+operation enum, not in any tool name, and the `audit_log` table has a check constraint
+rejecting anything but `upsert` and `list_add`.
+
+**Known limitation.** The CRM write and its audit record are separate transactions
+(D-020). The mutation runs first and a failure to audit is escalated rather than swallowed,
+but a process crash between the two would leave an un-audited mutation. Both writes are
+idempotent, so a replay converges.
 
 ## Testing
 
@@ -196,7 +245,9 @@ The suite verifies behaviour and failure modes, not that code runs. Representati
 startup survives an unreachable database instead of crashing; a bad DSN cannot hang startup;
 logs never reach stdout; personal data is redacted; `success` cannot be forged on a failed
 write; a rate limit is never retried; one tool call makes exactly one provider call; a
-company name is never guessed into a domain.
+company name is never guessed into a domain; a disabled server refuses a write and still
+audits it; a dry run leaves PostgreSQL untouched; a synced title cannot overwrite one a
+human curated; `crm_query` emits no audit event.
 
 Provider adapters run against a scripted HTTP transport that records every outbound request,
 so the whole suite makes **no network calls and consumes no credits** — and a change that
@@ -216,8 +267,8 @@ uv run ruff check . && uv run ruff format --check . && uv run mypy && uv run pyt
    audit sink. ✅ Complete
 3. **Enrichment** — provider survey and selection (D-017), provider adapters, canonical
    enrichment models, `search_company` and `search_contact`. ✅ Complete
-4. **Write tools** — `crm_query`, then `sync_to_crm` and `save_to_list` with the full
-   guardrail and audit path. Planned.
+4. **Write tools** — `crm_query`, `sync_to_crm` and `save_to_list` with the full guardrail
+   and audit path. ✅ Complete
 5. **Evaluation** — measure whether an agent picks the right tool from a realistic GTM
    request, and whether it interprets write outcomes correctly. Planned.
 

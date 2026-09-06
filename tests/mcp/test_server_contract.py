@@ -103,14 +103,43 @@ async def test_server_info_reports_the_database_as_unavailable_in_tests(client: 
 
 
 async def test_planned_capabilities_are_declared_but_not_callable(client: Client) -> None:
-    """Honest self-report: what is listed as planned must not be registered."""
+    """Honest self-report: what is listed as planned must not be registered.
+
+    The planned list is empty now that the CRM tools have shipped. The assertion
+    is kept general rather than deleted, because its job is to catch the next
+    capability that is announced before it exists.
+    """
     result = await client.call_tool("server_info", {})
     assert result.structured_content is not None
     planned = set(result.structured_content["planned_capabilities"])
-    assert planned == {"crm_query", "save_to_list", "sync_to_crm"}
 
     registered = {tool.name for tool in (await client.list_tools()).tools}
     assert planned.isdisjoint(registered)
+
+
+async def test_the_capabilities_shipped_in_this_phase_are_reported_as_implemented(
+    client: Client,
+) -> None:
+    """The three Phase 4 tools moved from planned to implemented, in both places."""
+    result = await client.call_tool("server_info", {})
+    assert result.structured_content is not None
+    implemented = set(result.structured_content["implemented_capabilities"])
+    planned = set(result.structured_content["planned_capabilities"])
+
+    phase_four = {"crm_query", "sync_to_crm", "save_to_list"}
+    assert phase_four <= implemented
+    assert phase_four.isdisjoint(planned)
+
+
+async def test_the_write_guardrails_are_reported_so_an_agent_can_plan(client: Client) -> None:
+    """An agent that cannot see writes are off will keep trying to write."""
+    result = await client.call_tool("server_info", {})
+    assert result.structured_content is not None
+    payload = result.structured_content
+
+    assert payload["write_tools_enabled"] is False
+    assert payload["dry_run_writes"] is False
+    assert payload["max_write_batch_size"] >= 1
 
 
 async def test_implemented_capabilities_are_all_actually_registered(client: Client) -> None:

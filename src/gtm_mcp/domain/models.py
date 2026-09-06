@@ -15,7 +15,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 
 class RecordSource(StrEnum):
@@ -117,3 +117,45 @@ class ContactFilter(BaseModel):
         default=None, description="Restrict results to members of this GTM list."
     )
     limit: int = Field(default=25, ge=1, le=100, description="Maximum number of records to return.")
+
+
+class ContactQueryResult(BaseModel):
+    """The result of a bounded CRM contact query.
+
+    An envelope rather than a bare list, for the same reason the enrichment
+    lookups are: the agent needs to tell "no contact matches these filters" apart
+    from "something went wrong", and it needs to know whether it is looking at
+    everything or at the first page of more.
+
+    ``json_schema_mode_override`` is required because of the computed fields; see
+    DECISIONS.md D-018.
+    """
+
+    model_config = ConfigDict(
+        extra="forbid", frozen=True, json_schema_mode_override="serialization"
+    )
+
+    filters: ContactFilter = Field(
+        description="The filters actually applied, after normalisation. Compare against "
+        "what you sent if the results are not what you expected."
+    )
+    contacts: tuple[Contact, ...] = Field(
+        default=(), description="Matching contacts, newest first, at most `filters.limit`."
+    )
+    message: str = Field(description="Human- and model-readable summary of what the query matched.")
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def count(self) -> int:
+        """How many contacts this result carries."""
+        return len(self.contacts)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def limit_reached(self) -> bool:
+        """Whether the result was truncated by ``filters.limit``.
+
+        ``True`` means there may be further matches that this call did not
+        return; narrow the filters rather than assuming you have seen them all.
+        """
+        return len(self.contacts) >= self.filters.limit

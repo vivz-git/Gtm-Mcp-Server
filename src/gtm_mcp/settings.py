@@ -80,18 +80,24 @@ class Settings(BaseSettings):
     # rules. They are read at call time by the write-tool boundary, so an
     # operator can run a strictly read-only deployment of the same image.
     enable_write_tools: bool = Field(
-        default=True,
-        description="Master switch. When false, write tools refuse with an explicit error.",
+        default=False,
+        description="Master switch, off by default. Write tools stay registered and "
+        "discoverable so an agent can see what the server could do, but every mutation "
+        "is refused with an audited, explicitly explained rejection until an operator "
+        "opts in (D-019).",
     )
     dry_run_writes: bool = Field(
         default=False,
-        description="When true, write tools validate and audit but never persist.",
+        description="When true, write tools validate the request and audit the attempt "
+        "but never persist. The result reports outcome 'dry_run', which is not a success.",
     )
     max_write_batch_size: int = Field(
         default=1,
         ge=1,
         le=25,
-        description="Upper bound on records mutated by a single write tool call.",
+        description="Upper bound on records mutated by a single write tool call. Every "
+        "write passes its record count through one chokepoint, so a future batch-capable "
+        "tool cannot bypass this limit.",
     )
 
     # --- External enrichment ------------------------------------------------

@@ -16,10 +16,12 @@ from typing import TYPE_CHECKING
 from gtm_mcp.audit.postgres import PostgresAuditSink
 from gtm_mcp.audit.sinks import LoggingAuditSink
 from gtm_mcp.context import AppContext
+from gtm_mcp.crm.repository import PostgresCrmRepository
 from gtm_mcp.db.engine import build_engine, build_session_factory, check_connection
 from gtm_mcp.errors import RepositoryError
 from gtm_mcp.logging_setup import configure_logging, get_logger
 from gtm_mcp.providers import build_enrichment_providers, build_http_client
+from gtm_mcp.services.crm import CrmService
 from gtm_mcp.services.enrichment import EnrichmentService
 from gtm_mcp.settings import Settings
 
@@ -31,6 +33,7 @@ _log = get_logger(__name__)
 
 def make_lifespan(
     settings: Settings,
+    prebuilt_context: AppContext | None = None,
 ) -> Callable[[MCPServer[AppContext]], AbstractAsyncContextManager[AppContext]]:
     """Build the lifespan context manager bound to a specific configuration.
 
@@ -41,6 +44,14 @@ def make_lifespan(
 
     Args:
         settings: Configuration the server should run with.
+        prebuilt_context: A fully assembled context to serve instead of building
+            one. This is the seam the write-guardrail tests use: they need to
+            drive the real protocol path with an in-memory repository and audit
+            sink, and constructing the context is the only part of the server
+            they should be allowed to replace. Registration, schema derivation,
+            annotations and error routing all stay real. Resources inside a
+            prebuilt context are owned by whoever built it and are not disposed
+            here.
 
     Returns:
         A lifespan callable suitable for ``MCPServer(lifespan=...)``.
@@ -77,6 +88,10 @@ def make_lifespan(
         # before the first byte of JSON-RPC is written to stdout.
         configure_logging(level=settings.log_level, log_format=settings.log_format)
 
+        if prebuilt_context is not None:
+            yield prebuilt_context
+            return
+
         # The HTTP client is created only for a live provider: the offline
         # adapter performs no network I/O, and an unused pooled client is a
         # resource and a footgun (an accidental outbound call in a test) that
@@ -111,7 +126,13 @@ def make_lifespan(
             context.engine = engine
             session_factory = build_session_factory(engine)
             context.session_factory = session_factory
-            context.audit_sink = PostgresAuditSink(session_factory)
+            audit_sink = PostgresAuditSink(session_factory)
+            context.audit_sink = audit_sink
+            context.crm = CrmService(
+                repository=PostgresCrmRepository(session_factory),
+                audit_sink=audit_sink,
+                settings=settings,
+            )
             context.database_available = True
 
         _log.info(

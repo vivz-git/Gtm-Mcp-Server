@@ -37,7 +37,12 @@ class ServerInfo(BaseModel):
         description="Whether write tools may modify data. When false they refuse every call."
     )
     dry_run_writes: bool = Field(
-        description="When true, write tools validate and audit but never persist changes."
+        description="When true, write tools validate and audit but never persist changes. "
+        "A 'dry_run' outcome means nothing was written."
+    )
+    max_write_batch_size: int = Field(
+        description="Maximum records a single write tool call may modify. The current write "
+        "tools handle one record per call regardless."
     )
     company_enrichment_provider: str = Field(
         description="Identifier of the provider backing search_company."
@@ -62,12 +67,19 @@ class ServerInfo(BaseModel):
 # Capability lists are declared here, next to the tool that reports them, so
 # that enabling a tool and announcing it are a single edit. Each entry moves
 # from planned to implemented as its tool is registered.
-_IMPLEMENTED: tuple[str, ...] = ("server_info", "search_company", "search_contact")
-_PLANNED: tuple[str, ...] = (
+_IMPLEMENTED: tuple[str, ...] = (
+    "server_info",
+    "search_company",
+    "search_contact",
     "crm_query",
-    "save_to_list",
     "sync_to_crm",
+    "save_to_list",
 )
+
+#: Nothing is planned-but-unregistered at present. The field stays in the
+#: response because an empty list is itself the honest answer, and because the
+#: contract test asserts that whatever appears here is genuinely not callable.
+_PLANNED: tuple[str, ...] = ()
 
 
 def register_diagnostics_tools(mcp: MCPServer[AppContext]) -> None:
@@ -108,6 +120,7 @@ def register_diagnostics_tools(mcp: MCPServer[AppContext]) -> None:
             database_available=app.database_available,
             write_tools_enabled=settings.enable_write_tools,
             dry_run_writes=settings.dry_run_writes,
+            max_write_batch_size=settings.max_write_batch_size,
             company_enrichment_provider=app.enrichment.company_provider_name,
             contact_enrichment_provider=app.enrichment.contact_provider_name,
             enrichment_is_live=app.enrichment.live,

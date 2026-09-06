@@ -51,6 +51,7 @@ class PostgresAuditSink:
                     request_id=event.request_id,
                     error_code=event.error_code,
                     dry_run=event.dry_run,
+                    details=dict(event.details),
                 )
                 session.add(row)
         except SQLAlchemyError as exc:

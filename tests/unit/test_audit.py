@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from gtm_mcp.audit.events import AuditEvent, AuditOperation
+from gtm_mcp.audit.events import (
+    MAX_DETAIL_ENTRIES,
+    MAX_DETAIL_VALUE_LENGTH,
+    AuditEvent,
+    AuditOperation,
+)
 from gtm_mcp.audit.sinks import AuditSink, InMemoryAuditSink, LoggingAuditSink, PostgresAuditSink
 from gtm_mcp.domain.results import WriteOutcome
 
@@ -71,3 +76,56 @@ def test_sinks_satisfy_the_protocol_structurally() -> None:
     assert isinstance(InMemoryAuditSink(), AuditSink)
     assert isinstance(LoggingAuditSink(), AuditSink)
     assert issubclass(PostgresAuditSink, AuditSink)
+
+
+@pytest.mark.unit
+def test_detail_values_for_sensitive_keys_are_redacted_before_the_event_exists() -> None:
+    """Audit rows reach log aggregators; a credential must not ride along.
+
+    Enforced on the event rather than at each call site, so the guarantee holds
+    for callers that do not exist yet.
+    """
+    event = AuditEvent(
+        tool_name="sync_to_crm",
+        operation=AuditOperation.UPSERT,
+        outcome=WriteOutcome.CREATED,
+        target_type="contact",
+        details={
+            "email": "elena@cloudscale.io",
+            "phone": "+1-555-0100",
+            "api_key": "sk-live-not-a-real-key",
+            "list_name": "Q4 Pipeline",
+        },
+    )
+
+    assert event.details["email"] == "[redacted]"
+    assert event.details["phone"] == "[redacted]"
+    assert event.details["api_key"] == "[redacted]"
+    assert event.details["list_name"] == "Q4 Pipeline"
+    assert "elena@cloudscale.io" not in str(event.model_dump())
+
+
+@pytest.mark.unit
+def test_a_long_detail_value_is_truncated_rather_than_stored_whole() -> None:
+    """An audit row is evidence, not a place to park a provider payload."""
+    event = AuditEvent(
+        tool_name="sync_to_crm",
+        operation=AuditOperation.UPSERT,
+        outcome=WriteOutcome.CREATED,
+        target_type="contact",
+        details={"note": "x" * 5_000},
+    )
+
+    assert len(event.details["note"]) == MAX_DETAIL_VALUE_LENGTH
+
+
+@pytest.mark.unit
+def test_an_event_cannot_carry_an_unbounded_number_of_details() -> None:
+    with pytest.raises(ValueError, match="at most"):
+        AuditEvent(
+            tool_name="sync_to_crm",
+            operation=AuditOperation.UPSERT,
+            outcome=WriteOutcome.CREATED,
+            target_type="contact",
+            details={f"key_{index}": "value" for index in range(MAX_DETAIL_ENTRIES + 1)},
+        )

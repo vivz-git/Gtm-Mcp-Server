@@ -33,10 +33,19 @@ Choosing a tool:
   the values come from this server's offline synthetic dataset: use them to
   demonstrate a workflow, never present them to the user as real-world facts.
   `server_info` reports which provider is configured.
+- `crm_query` reads this server's own CRM. It is free, it costs no provider
+  credit, and it is the right first step when the user asks about accounts or
+  people the business already knows. Do not reach for enrichment to answer a
+  question the CRM can answer.
 - Read tools never modify data and are safe to call speculatively.
 - Write tools modify CRM state. Call them only when the user has asked for a
   change, and use the enriched record you just retrieved rather than values you
-  inferred.
+  inferred. `sync_to_crm` creates or updates one contact; `save_to_list` adds a
+  contact that already exists to a named list. Neither deletes anything: this
+  server has no destructive capability at all.
+- Writes may be switched off by configuration. When that is the case every write
+  returns `rejected` with an explanation, and no amount of rephrasing will change
+  it — say so rather than retrying. `server_info` reports the current setting.
 
 Interpreting write results: every write tool returns an explicit outcome. Treat
 `created`, `updated` and `unchanged` as done. Treat `dry_run` as NOT done, the
@@ -48,17 +57,25 @@ available before planning a multi-step workflow.
 """
 
 
-def build_server(settings: Settings | None = None) -> MCPServer[AppContext]:
+def build_server(
+    settings: Settings | None = None,
+    *,
+    context: AppContext | None = None,
+) -> MCPServer[AppContext]:
     """Build a fully configured GTM MCP server.
 
     Args:
         settings: Configuration to use. Defaults to the process settings.
+        context: A prebuilt application context to serve instead of building one
+            from ``settings``. Reserved for tests that need to drive the real
+            protocol path against in-memory infrastructure; everything else
+            about the server stays identical.
 
     Returns:
         A server with all tools registered and the lifespan attached, ready to
         be run over a transport or driven by an in-memory client.
     """
-    resolved = settings or get_settings()
+    resolved = settings or (context.settings if context is not None else get_settings())
 
     mcp: MCPServer[AppContext] = MCPServer(
         name=resolved.server_name,
@@ -68,7 +85,7 @@ def build_server(settings: Settings | None = None) -> MCPServer[AppContext]:
         # falling back to the SDK's own version as v1 did.
         version=__version__,
         instructions=SERVER_INSTRUCTIONS,
-        lifespan=make_lifespan(resolved),
+        lifespan=make_lifespan(resolved, context),
         # Registering the same tool name twice is a bug, not a warning.
         warn_on_duplicate_tools=True,
     )

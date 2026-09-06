@@ -8,6 +8,7 @@ without a protocol session.
 
 from __future__ import annotations
 
+from gtm_mcp.services.crm import CrmService
 from gtm_mcp.services.enrichment import EnrichmentService
 
-__all__ = ["EnrichmentService"]
+__all__ = ["CrmService", "EnrichmentService"]

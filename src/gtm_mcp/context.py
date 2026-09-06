@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from gtm_mcp.audit.sinks import AuditSink
 from gtm_mcp.errors import RepositoryError
 from gtm_mcp.providers.sample import SampleCompanyProvider, SampleContactProvider
+from gtm_mcp.services.crm import CrmService
 from gtm_mcp.services.enrichment import EnrichmentService
 from gtm_mcp.settings import Settings
 
@@ -51,6 +52,7 @@ class AppContext:
     settings: Settings
     audit_sink: AuditSink
     enrichment: EnrichmentService = field(default_factory=_default_enrichment_service)
+    crm: CrmService | None = None
     http_client: httpx2.AsyncClient | None = None
     engine: AsyncEngine | None = None
     session_factory: async_sessionmaker[AsyncSession] | None = None
@@ -76,3 +78,24 @@ class AppContext:
                 "'docker compose up -d db' and restart the server.",
             )
         return self.session_factory
+
+    def require_crm(self) -> CrmService:
+        """Return the CRM service, or fail with an actionable message.
+
+        ``None`` here means the database probe failed at startup, so the CRM
+        tools have nothing to talk to. Failing with one clear sentence beats an
+        ``AttributeError`` on ``None`` reaching the agent as an internal error.
+
+        Returns:
+            The configured CRM service.
+
+        Raises:
+            RepositoryError: The database was not reachable at startup.
+        """
+        if self.crm is None:
+            raise RepositoryError(
+                "The CRM database is not available, so no CRM tool can run. Start it with "
+                "'docker compose up -d db' and restart the server. Enrichment tools are "
+                "unaffected.",
+            )
+        return self.crm

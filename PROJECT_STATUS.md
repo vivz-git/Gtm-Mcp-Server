@@ -3,17 +3,19 @@
 Source of truth for where this build actually is. Updated in the same commit as the work it
 describes.
 
-**Last updated:** 2026-09-06 · **Phase 3 of 5 complete** · Quality gate green
+**Last updated:** 2026-09-06 · **Phase 4 of 5 complete** · Quality gate green
 
 ---
 
 ## Current phase
 
-**Phase 3 — External Enrichment.** ✅ Complete
+**Phase 4 — CRM read and guarded write tools.** ✅ Complete
 
-Two enrichment providers sit behind the ports established in Phase 1, and the first two real
-GTM tools — `search_company` and `search_contact` — are registered and callable. Both are
-read-only: they return canonical records and write nothing to the CRM.
+The GTM tool surface is complete: `crm_query` reads the CRM through the repository port, and
+`sync_to_crm` and `save_to_list` write to it through a single guarded path that enforces
+every configured control and audits every attempt. Writes ship **disabled by default**
+(D-019): the tools are listed and callable, but a mutation is refused with an audited,
+explained result until an operator opts in.
 
 ## Verified technology
 
@@ -89,11 +91,36 @@ and `CrmRepository` ports.
   into a readable result rather than an error. No vendor name appears above the adapters.
 * `search_company` and `search_contact` MCP tools, read-only, with `open_world_hint=True`.
 
-**Tools** — `server_info`, `search_company`, `search_contact`. `server_info` reports which
-capabilities are implemented versus planned, which enrichment provider is configured, and
-whether that provider is live.
+**CRM tools and the write control model (Phase 4)**
+* `CrmService` (`services/crm.py`): bounded reads, and `_execute_write` — the **only** caller
+  of a `CrmRepository` write method in the codebase. It checks `enable_write_tools`, then
+  `max_write_batch_size` against a caller-supplied record count, then business preconditions,
+  then `dry_run_writes`, before delegating and auditing the real outcome (**D-019**).
+* `enable_write_tools` now defaults to **false**. A refused write returns `rejected`, calls
+  no repository method, and is still audited with `error_code=write_rejected`.
+* `dry_run_writes` validates fully — including "does this contact exist?" — audits with
+  `dry_run=true`, and returns `dry_run`, which is not a success (D-009).
+* `ContactSyncInput` (`domain/writes.py`): the submission contract. No `source` field, so an
+  agent cannot claim CRM authority for its own data (**D-021**); every string bounded to its
+  column width; email and ISO country code validated at the schema so a bad value fails
+  where the model can read the reason.
+* `ContactQueryResult`: query envelope with computed `count` and `limit_reached`, using the
+  D-018 serialisation-mode override.
+* `AuditEvent` gained a `details` map, persisted into the `audit_log.details` column that
+  already existed. Known-sensitive keys are redacted and values truncated on the event
+  itself, so a call site cannot leak an address into the trail.
+* Atomicity boundary chosen and documented (**D-020**): CRM write and audit write are
+  separate transactions, mutation first, audit failures escalated rather than swallowed, with
+  the residual crash window stated plainly rather than glossed over.
+* `crm_query`, `sync_to_crm`, `save_to_list` registered with annotations and descriptions
+  written for a model choosing among them.
 
-**Tests** — 204 passing across unit (152), mcp (36) and integration (16) markers.
+**Tools** — `server_info`, `search_company`, `search_contact`, `crm_query`, `sync_to_crm`,
+`save_to_list`. `server_info` reports implemented versus planned capabilities (the planned
+list is now empty), the configured enrichment provider and whether it is live, and all three
+write guardrail settings so an agent can plan around them.
+
+**Tests** — 309 passing across unit (207), mcp (75) and integration (27) markers.
 
 ## Verification performed
 
@@ -101,9 +128,10 @@ whether that provider is live.
 | --- | --- |
 | `ruff check .` | Pass |
 | `ruff format --check .` | Pass |
-| `mypy` (strict) | Pass, 61 source files |
-| `pytest -m "not integration"` | 188 passed |
-| `pytest` (full suite with PostgreSQL) | 204 passed (152 unit, 36 mcp, 16 integration) |
+| `mypy` (strict) | Pass, 70 source files |
+| `pytest -m "not integration"` | 282 passed |
+| `pytest` (full suite with PostgreSQL) | 309 passed (207 unit, 75 mcp, 27 integration) |
+| Destructive-SQL screen over `src/` | No `DELETE`/`DROP`/`TRUNCATE`; only static `text()` literals (probe, partial-index predicates) |
 | Live adapter validation | One call to Hunter Email Finder with the documented no-credit `test-api-key`; response parsed into a canonical contact. Zero credits consumed. |
 | Enrichment calls during the test suite | Zero — every provider test runs on a scripted transport |
 
@@ -114,14 +142,13 @@ covered by `test_the_record_reports_the_person_the_provider_returned`.
 
 ## Next phase
 
-**Phase 4 — Write tools.** Not started.
+**Phase 5 — Evaluation.** Not started.
 
-1. `sync_to_crm`: upsert an enriched company or contact into the CRM, through the full
-   guardrail sequence (`enable_write_tools`, `dry_run_writes`, `max_write_batch_size`) with
-   an audit record for every attempt, including refusals.
-2. `save_to_list`: additive, idempotent list membership.
-3. `crm_query`: bounded, typed CRM reads.
-4. Guardrail tests proving each switch *blocks* something.
+1. `eval`-marked scenarios measuring whether an agent picks the right tool from a realistic
+   GTM request — CRM before enrichment, `sync_to_crm` before `save_to_list`.
+2. Whether an agent interprets write outcomes correctly, especially that `dry_run` and
+   `rejected` mean the task is *not* done.
+3. Scoring and a short report; excluded from the default quality gate.
 
 ## Known issues and limitations
 
@@ -132,7 +159,10 @@ covered by `test_the_record_reports_the_person_the_provider_returned`.
 | Hunter's company payload has no website field | `Company.website` is unset under the live provider | Left unset rather than synthesised from the domain |
 | Free tier is 50 credits/month | ~50 contact searches or ~250 company searches per month | Demonstration budget; documented in D-017 |
 | No caching of enrichment results | Repeat lookups re-spend credits | Deferred: a cache is a correctness and staleness decision, not a quick win |
-| Guardrail settings read but not yet enforced | No write tool exists to enforce them on | Phase 4 |
+| Write tools ship disabled | Out of the box, `sync_to_crm` and `save_to_list` refuse every mutation | Deliberate (D-019). Set `GTM_ENABLE_WRITE_TOOLS=true` to enable; the refusal is audited and explains itself |
+| CRM write and audit write are separate transactions | A process crash between them could leave an un-audited mutation | Documented in D-020. Mutation first, audit failures escalated, both writes idempotent so a replay converges. Not closed by this design |
+| `sync_to_crm` handles contacts only | An enriched *company* cannot yet be persisted | The repository has no company upsert; adding one is an additive port method, not a redesign |
+| List membership is additive only | A contact cannot be removed from a list | Deliberate (D-008). A future membership *status* change would be additive, not a delete |
 | No authentication on streamable-http | Unsafe to expose remotely as-is | Out of scope until remote hosting is a goal |
 
 ## Open questions

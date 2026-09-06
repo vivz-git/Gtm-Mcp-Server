@@ -96,6 +96,43 @@ class WriteResult(BaseModel):
         return cls(outcome=WriteOutcome.REJECTED, message=reason)
 
     @classmethod
+    def dry_run_simulated(cls, summary: str, *, record_id: str | None = None) -> WriteResult:
+        """Build a result for a validated write that configuration skipped persisting.
+
+        ``DRY_RUN`` is deliberately not a success: the message states plainly
+        that nothing was written, so an agent does not report the task as done.
+
+        Args:
+            summary: What *would* have happened, phrased for the calling agent.
+            record_id: Identifier of the record that would have been touched, if known.
+
+        Returns:
+            A ``WriteResult`` with outcome ``DRY_RUN``.
+        """
+        return cls(
+            outcome=WriteOutcome.DRY_RUN,
+            record_id=record_id,
+            message=(
+                f"{summary} NOTHING WAS WRITTEN: this server is configured with "
+                f"dry_run_writes enabled. Do not report this change as done."
+            ),
+        )
+
+    def with_audit_id(self, audit_id: str) -> WriteResult:
+        """Return a copy carrying the identifier of this operation's audit record.
+
+        The audit event is written after the outcome is known, so the identifier
+        is attached here rather than threaded through every construction site.
+
+        Args:
+            audit_id: Identifier of the recorded audit event.
+
+        Returns:
+            A copy of this result with ``audit_id`` set.
+        """
+        return self.model_copy(update={"audit_id": audit_id})
+
+    @classmethod
     def failed(cls, reason: str, *, record_id: str | None = None) -> WriteResult:
         """Build a result for a write that was attempted and did not complete.
 

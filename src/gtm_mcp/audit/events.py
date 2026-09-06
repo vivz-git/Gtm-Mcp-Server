@@ -12,9 +12,17 @@ import uuid
 from datetime import UTC, datetime
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from gtm_mcp.domain.results import WriteOutcome
+from gtm_mcp.logging_setup import REDACTED_KEYS, REDACTION_PLACEHOLDER
+
+#: Hard cap on a single ``details`` value. Audit rows are operational evidence,
+#: not a place to park a provider payload.
+MAX_DETAIL_VALUE_LENGTH = 200
+
+#: Hard cap on how many detail entries one event may carry.
+MAX_DETAIL_ENTRIES = 10
 
 
 class AuditOperation(StrEnum):
@@ -77,3 +85,41 @@ class AuditEvent(BaseModel):
     dry_run: bool = Field(
         default=False, description="Whether persistence was intentionally skipped."
     )
+    details: dict[str, str] = Field(
+        default_factory=dict,
+        description="Small, non-sensitive key/value context about the attempt, e.g. the "
+        "list name a contact was added to. Values are truncated and known-sensitive keys "
+        "are redacted before the event is constructed.",
+    )
+
+    @field_validator("details")
+    @classmethod
+    def _sanitise_details(cls, value: dict[str, str]) -> dict[str, str]:
+        """Redact sensitive keys and bound the size of every detail value.
+
+        Audit rows are read by operators and shipped to log aggregators, so a
+        credential or an email address must not be able to reach one through a
+        careless call site. Enforcing it here rather than at each caller means
+        the guarantee holds for callers that do not yet exist.
+
+        Args:
+            value: The raw detail mapping supplied by the write path.
+
+        Returns:
+            A mapping with sensitive values replaced and long values truncated.
+
+        Raises:
+            ValueError: More than ``MAX_DETAIL_ENTRIES`` entries were supplied.
+        """
+        if len(value) > MAX_DETAIL_ENTRIES:
+            raise ValueError(
+                f"an audit event carries at most {MAX_DETAIL_ENTRIES} detail entries, "
+                f"got {len(value)}"
+            )
+        sanitised: dict[str, str] = {}
+        for key, raw in value.items():
+            if key.lower() in REDACTED_KEYS:
+                sanitised[key] = REDACTION_PLACEHOLDER
+                continue
+            sanitised[key] = raw[:MAX_DETAIL_VALUE_LENGTH]
+        return sanitised

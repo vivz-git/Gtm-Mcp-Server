@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from gtm_mcp.context import AppContext
+from gtm_mcp.tools.crm import register_crm_tools
 from gtm_mcp.tools.diagnostics import register_diagnostics_tools
 from gtm_mcp.tools.enrichment import register_enrichment_tools
 
@@ -29,6 +30,7 @@ def register_all(mcp: MCPServer[AppContext]) -> None:
     """
     register_diagnostics_tools(mcp)
     register_enrichment_tools(mcp)
+    register_crm_tools(mcp)
 
 
 __all__ = ["register_all"]

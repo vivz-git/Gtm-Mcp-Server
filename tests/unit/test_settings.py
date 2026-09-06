@@ -52,6 +52,17 @@ def test_dry_run_is_off_and_batch_size_is_one_by_default() -> None:
 
 
 @pytest.mark.unit
+def test_write_tools_are_disabled_unless_an_operator_opts_in() -> None:
+    """The dangerous default is the one nobody set deliberately (D-019).
+
+    A fresh clone, a CI job and a misconfigured deployment all land here, so the
+    out-of-the-box behaviour has to be the safe one: writes refused, loudly and
+    auditably, until someone turns them on.
+    """
+    assert Settings().enable_write_tools is False
+
+
+@pytest.mark.unit
 @pytest.mark.parametrize("bad_size", [0, 26])
 def test_write_batch_size_is_bounded(bad_size: int) -> None:
     with pytest.raises(PydanticValidationError):

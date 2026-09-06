@@ -123,6 +123,7 @@ markers = [
     "integration: requires a live PostgreSQL instance (docker compose up -d db)",
     "mcp: exercises the server through a real in-memory MCP client session",
     "eval: agent tool-selection evaluations; slow, not part of the default gate",
+    "settings(**overrides): configuration a test's server should be built with",
 ]
 filterwarnings = ["error", "ignore::DeprecationWarning"]
 

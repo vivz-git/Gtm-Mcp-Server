@@ -434,3 +434,111 @@ does not carry (D-009).
 **Consequences.** Covered by `test_output_schemas_are_derived_and_advertise_the_found_flag`.
 A future tool returning a model with a computed field and no override fails loudly at call
 time rather than silently.
+
+---
+
+## D-019 — Write tools ship disabled, and every write passes one chokepoint
+
+**Date:** 2026-09-06 · **Status:** Accepted
+
+**Context.** Phase 4 added the first tools that can change persistent state. Two questions
+had to be settled before writing them: what the default should be on a machine where nobody
+configured anything, and how the guardrails are enforced so that a fourth write tool added
+next year cannot quietly skip them.
+
+**Decision.**
+
+1. `enable_write_tools` defaults to **false**. Write tools stay registered, listed and
+   callable; a mutation is refused with outcome `rejected`, an explanation written for the
+   model, and an audit record.
+2. All three guardrails are enforced in exactly one function,
+   `CrmService._execute_write`. It is the only code in the system that calls a
+   `CrmRepository` write method, and it checks `enable_write_tools`, then the record count
+   against `max_write_batch_size`, then business preconditions, then `dry_run_writes`,
+   before delegating and auditing the real outcome.
+3. `dry_run_writes` validates and audits — including preconditions such as "does this
+   contact exist?" — and then returns `dry_run` without calling a repository write method.
+   `DRY_RUN` is excluded from `SUCCESSFUL_OUTCOMES` (D-009), so it can never read as done.
+4. `max_write_batch_size` is checked against a `record_count` the caller passes in, even
+   though every current tool passes 1. The boundary is explicit now so a future batch tool
+   inherits it instead of reinventing it.
+
+**Why.** The dangerous default is the one nobody chose. A fresh clone, a CI job and a
+half-finished deployment all land on the defaults, and an agent with write access to a CRM
+it was not meant to touch is the failure this project exists to take seriously. Refusing
+rather than hiding the tools is deliberate: a hidden tool makes the server look incapable,
+whereas an audited refusal tells the agent exactly what to report to the user.
+
+Enforcing at a chokepoint rather than in each tool is the difference between a rule and a
+habit. A tool that checked the guardrails itself would be correct today and one careless
+copy-paste away from wrong.
+
+**Consequences.** Enabling writes is an explicit operator action (`GTM_ENABLE_WRITE_TOOLS=true`).
+`server_info` reports all three settings so an agent can plan around them. Covered by
+`tests/unit/test_crm_service.py` (each control blocks and permits), `tests/mcp/test_crm_tools.py`
+(the same through a real protocol session), `tests/integration/test_crm_service_writes.py`
+(no row reaches PostgreSQL), and structurally by
+`test_every_write_method_goes_through_the_single_guarded_path` and
+`test_the_service_is_the_only_caller_of_a_repository_write_method`.
+
+---
+
+## D-020 — The CRM write and its audit record are separate transactions, ordered and escalated
+
+**Date:** 2026-09-06 · **Status:** Accepted
+
+**Context.** "Never report a write that did not happen" and "audit every attempt" pull in
+opposite directions when the two writes can fail independently. `PostgresCrmRepository` and
+`PostgresAuditSink` each open their own session and commit their own transaction.
+
+**Decision.**
+
+1. The mutation happens first; the audit event is written once its real outcome is known.
+   One event per attempt, carrying that outcome.
+2. A failure to audit is **never** swallowed. It raises `RepositoryError`, which routes to
+   `MCPError` (D-007), and the message states explicitly whether the CRM change was applied.
+3. No attempt is made to span the two with a shared transaction or a distributed one.
+
+**Why.** Writing the audit record first would mean auditing an outcome not yet known, which
+is worse than a small window: the trail would assert things that did not happen. Making the
+sink share the repository's session would put a transaction handle in the port, coupling the
+audit trail to a datastore that a future `CrmRepository` (HubSpot, Salesforce) will not
+have — the port would then be describing SQL rather than a CRM.
+
+**Known limitation, stated plainly.** A process crash between a successful CRM write and its
+audit write leaves an un-audited mutation. The window is one statement wide and is not
+closed by this design. It is mitigated, not eliminated, by three things: both writes are
+idempotent, so replaying converges; an audit-sink *failure* (as opposed to a crash) is
+surfaced rather than hidden; and the ordering guarantees the inverse error — an audit record
+for a write that did not happen — cannot occur for the success outcomes.
+
+**Consequences.** Covered by `test_an_unauditable_write_is_escalated_rather_than_reported_as_done`,
+`test_an_unauditable_rejection_says_no_change_was_applied` and
+`test_a_repository_failure_is_audited_and_never_reported_as_success`.
+
+---
+
+## D-021 — An agent cannot declare its own data CRM-authoritative
+
+**Date:** 2026-09-06 · **Status:** Accepted
+
+**Context.** D-015 makes `RecordSource` decide who wins a merge conflict: CRM-curated values
+beat enrichment values. The canonical `Contact` therefore has a `source` field. Exposing
+that model directly as the `sync_to_crm` parameter would have let a caller set
+`source="crm"` and overwrite a human-verified value with a guess.
+
+**Decision.** `sync_to_crm` accepts `ContactSyncInput`, which has no `source` field.
+`ContactSyncInput.to_contact()` stamps `RecordSource.ENRICHMENT` — the least privileged
+provenance — on every record submitted through a tool. The input model also bounds every
+string to the width of the column that will hold it, and validates emails and country codes,
+so a bad value fails at schema validation with a message the model can act on rather than as
+a database error mid-write.
+
+**Why.** A guardrail an agent can turn off by setting a field is not a guardrail. Separating
+the submission contract from the storage model costs one small class and removes the
+escalation path entirely.
+
+**Consequences.** Agents can fill CRM fields that are empty and update
+enrichment-owned ones, but never overwrite curated data — which is exactly D-015's intent.
+Covered by `test_a_submitted_contact_is_always_marked_as_enrichment_provenance`,
+`test_a_synced_title_cannot_overwrite_one_a_human_curated` and the integration equivalents.
