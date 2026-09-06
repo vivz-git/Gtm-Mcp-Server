@@ -1,0 +1,52 @@
+# ---- Secrets (keep first: never commit real credentials) ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ---- Virtual environments / package managers ----
+.venv/
+venv/
+env/
+.uv/
+
+# ---- Testing / coverage / type checking ----
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+
+# ---- Local data ----
+*.sqlite3
+*.db
+pgdata/
+logs/
+*.log
+
+# ---- Editors / OS ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Claude Code local overrides (shared config IS committed) ----
+.claude/settings.local.json

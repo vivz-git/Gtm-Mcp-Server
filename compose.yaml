@@ -1,0 +1,33 @@
+# Local development infrastructure.
+#
+# The mock CRM runs on PostgreSQL so that the CRM layer is exercised against the
+# same engine a real deployment would use, rather than against SQLite with a
+# different dialect and different transactional behaviour.
+services:
+  db:
+    image: postgres:18-alpine
+    container_name: gtm-mcp-db
+    environment:
+      POSTGRES_USER: gtm
+      POSTGRES_PASSWORD: gtm
+      POSTGRES_DB: gtm
+    ports:
+      # Bound to loopback only: this database holds seeded contact data and has
+      # development credentials. It must not be reachable from the network.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      # Postgres 18 images expect a single mount at /var/lib/postgresql and place
+      # the cluster in a version-specific subdirectory. Mounting the older
+      # /var/lib/postgresql/data path makes the container exit on startup.
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      # The server probes the database at startup; the healthcheck lets
+      # `docker compose up --wait` block until that probe would succeed.
+      test: ["CMD-SHELL", "pg_isready -U gtm -d gtm"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  pgdata:

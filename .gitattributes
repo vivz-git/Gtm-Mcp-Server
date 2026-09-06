@@ -1,0 +1,7 @@
+# Normalise to LF in the repository. Development happens on Windows but CI runs
+# on Linux; without this, checked-in CRLF breaks shell scripts and produces
+# whole-file diffs whenever the platform changes.
+* text=auto eol=lf
+
+# Generated: keep out of diffs and language statistics.
+uv.lock linguist-generated=true -diff

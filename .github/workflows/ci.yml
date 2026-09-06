@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, types and tests
+    runs-on: ubuntu-latest
+
+    services:
+      # Integration tests run against a real PostgreSQL, matching local dev.
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: gtm
+          POSTGRES_PASSWORD: gtm
+          POSTGRES_DB: gtm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U gtm -d gtm"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      GTM_DATABASE_URL: postgresql+asyncpg://gtm:gtm@localhost:5432/gtm
+      GTM_ENVIRONMENT: test
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --extra dev --frozen
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Type check
+        run: uv run mypy
+
+      - name: Test
+        run: uv run pytest --cov --cov-report=term-missing

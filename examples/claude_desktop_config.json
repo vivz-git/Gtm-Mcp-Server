@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "gtm": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "C:\absolute\path\to\GTM_MCP_PROJ",
+        "run",
+        "gtm-mcp-server"
+      ],
+      "env": {
+        "GTM_DATABASE_URL": "postgresql+asyncpg://gtm:gtm@localhost:5432/gtm",
+        "GTM_LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}
