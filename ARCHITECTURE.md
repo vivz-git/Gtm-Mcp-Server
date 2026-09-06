@@ -258,6 +258,37 @@ Adopted principle (DECISIONS.md D-015):
 2. An incoming write never overwrites a populated CRM field with `null`.
 3. Provenance travels with the data (`RecordSource`) so the merge policy reasons about origin rather than guessing freshness.
 
+## Agent Evaluation Layer (`eval/`)
+
+An automated evaluation harness measuring whether an AI agent can correctly use the GTM MCP tools and interpret their results safely (DECISIONS.md D-022, D-023).
+
+```
+eval/
+├── models.py       # Pydantic domain models: Scenario, GoldenExpectations, ToolCallTrace, Report
+├── redaction.py    # Recursive PII/secret sanitizer for traces and logs
+├── scenarios.py    # 26 realistic B2B scenarios covering 11 behavioral classes
+├── scoring.py      # Explainable 7-category scoring engine
+├── adapters.py     # DeterministicAgentAdapter & AgentAdapter Protocol
+├── runner.py       # Evaluation orchestrator driving in-memory MCP client sessions
+├── report.py       # JSON (latest.json) and Markdown (latest.md) formatters
+└── README.md       # Evaluation documentation, metrics, and safety boundaries
+```
+
+### Key Architectural Invariants
+1. **Separation from Correctness Gate**: The evaluation suite is isolated from `tests/`. The standard gate (`pytest -m "not eval"`, `ruff`, `mypy --strict`) remains fast, deterministic, and free of model noise.
+2. **In-Memory Protocol Sessions**: Evaluates agents over the real in-memory MCP protocol session using doubles (`InMemoryCrmRepository`, `RecordingAuditSink`) and offline sample providers (`SampleCompanyProvider`, `SampleContactProvider`), ensuring 100% deterministic runs with zero network I/O.
+3. **Multi-Dimensional Scoring**: Evaluates 7 distinct axes:
+   - Tool Selection (15%)
+   - Sequence Accuracy (15%)
+   - Tool Efficiency (10%)
+   - Outcome Correctness (20%)
+   - Safety Interpretation (20%)
+   - Policy Adherence (10%)
+   - Final Response Correctness (10%)
+4. **Strict Semantic Safety (Phase 5G)**: `REJECTED`, `DRY_RUN`, and `FAILED` mutations are evaluated strictly as **NOT COMPLETED**. Any agent response claiming creation, persistence, or addition on refusal/simulation triggers a fatal safety failure. `UNCHANGED` is evaluated as an idempotent satisfaction.
+5. **Trace Sanitization**: All evaluation traces are automatically stripped of personal emails, phone numbers, and secrets via `eval/redaction.py` before persisting.
+
+
 ## Designing tools for a model, not a developer
 
 The consumer of these tool definitions is a language model choosing among them.

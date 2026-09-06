@@ -1,0 +1,1947 @@
+{
+  "timestamp": "2026-09-06T13:51:31.431565+00:00",
+  "mode": "deterministic",
+  "total_scenarios": 28,
+  "passed_scenarios": 28,
+  "failed_scenarios": 0,
+  "pass_rate_pct": 100.0,
+  "category_metrics": {
+    "crm_first": {
+      "total": 3.0,
+      "passed": 3.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    },
+    "crm_query": {
+      "total": 3.0,
+      "passed": 3.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    },
+    "dry_run": {
+      "total": 2.0,
+      "passed": 2.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    },
+    "enrichment": {
+      "total": 3.0,
+      "passed": 3.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    },
+    "failure_handling": {
+      "total": 2.0,
+      "passed": 2.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    },
+    "idempotency": {
+      "total": 2.0,
+      "passed": 2.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    },
+    "list_add": {
+      "total": 3.0,
+      "passed": 3.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    },
+    "read_write_boundary": {
+      "total": 2.0,
+      "passed": 2.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    },
+    "sequencing": {
+      "total": 3.0,
+      "passed": 3.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    },
+    "sync": {
+      "total": 3.0,
+      "passed": 3.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    },
+    "write_rejection": {
+      "total": 2.0,
+      "passed": 2.0,
+      "pass_rate": 100.0,
+      "avg_composite": 1.0
+    }
+  },
+  "aggregate_scores": {
+    "tool_selection": 1.0,
+    "sequence": 1.0,
+    "efficiency": 1.0,
+    "outcome": 1.0,
+    "safety_interpretation": 1.0,
+    "policy_adherence": 1.0,
+    "final_response": 1.0,
+    "composite": 1.0
+  },
+  "scenarios": [
+    {
+      "scenario_id": "crm-first-known",
+      "category": "crm_first",
+      "title": "CRM-first check for known contact",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "crm-first-known",
+        "category": "crm_first",
+        "intent": "Do we already know the VP of Engineering at CloudScale Systems?",
+        "tool_calls": [
+          {
+            "tool_name": "crm_query",
+            "arguments": {
+              "company_domain": "cloudscale.io",
+              "title_contains": "VP of Engineering"
+            },
+            "result": {
+              "filters": {
+                "company_domain": "cloudscale.io",
+                "title_contains": "VP of Engineering",
+                "country": null,
+                "list_name": null,
+                "limit": 25
+              },
+              "contacts": [
+                {
+                  "source": "crm",
+                  "confidence": 1.0,
+                  "retrieved_at": null,
+                  "full_name": "Elena Rostova",
+                  "first_name": "Elena",
+                  "last_name": "Rostova",
+                  "title": "VP of Engineering",
+                  "company_domain": "cloudscale.io",
+                  "company_name": null,
+                  "email": "e***@cloudscale.io",
+                  "phone": "[REDACTED_PHONE]",
+                  "city": "San Francisco",
+                  "country": "US",
+                  "linkedin_url": null
+                }
+              ],
+              "message": "Matched 1 CRM contact(s) for company_domain='cloudscale.io', title_contains='VP of Engineering'. Nothing was modified.",
+              "count": 1,
+              "limit_reached": false
+            },
+            "is_error": false,
+            "duration_ms": 88.56
+          }
+        ],
+        "final_response": "Found Elena Rostova (elena.rostova@cloudscale.io), VP of Engineering at CloudScale Systems (cloudscale.io) in our CRM.",
+        "execution_time_ms": 88.56,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": []
+      }
+    },
+    {
+      "scenario_id": "crm-first-missing",
+      "category": "crm_first",
+      "title": "CRM-first check with subsequent enrichment",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "crm-first-missing",
+        "category": "crm_first",
+        "intent": "Do we have a contact for Verdant Grid in our CRM? If not, find the commercial strategy leader.",
+        "tool_calls": [
+          {
+            "tool_name": "crm_query",
+            "arguments": {
+              "company_domain": "verdantgrid.co.uk"
+            },
+            "result": {
+              "filters": {
+                "company_domain": "verdantgrid.co.uk",
+                "title_contains": null,
+                "country": null,
+                "list_name": null,
+                "limit": 25
+              },
+              "contacts": [],
+              "message": "No CRM contact matches company_domain='verdantgrid.co.uk'. This is a successful query with an empty result, not a failure: the CRM holds no such record. Relax a filter or use search_contact to look the person up externally.",
+              "count": 0,
+              "limit_reached": false
+            },
+            "is_error": false,
+            "duration_ms": 29.29
+          },
+          {
+            "tool_name": "search_contact",
+            "arguments": {
+              "name": "Aoife Brennan",
+              "company": "verdantgrid.co.uk"
+            },
+            "result": {
+              "query": {
+                "full_name": "Aoife Brennan",
+                "first_name": "Aoife",
+                "last_name": "Brennan",
+                "company": {
+                  "raw": "verdantgrid.co.uk",
+                  "domain": "verdantgrid.co.uk",
+                  "name": null
+                }
+              },
+              "contact": {
+                "source": "enrichment",
+                "confidence": 0.79,
+                "retrieved_at": "2026-09-06T13:51:29.192218Z",
+                "full_name": "Aoife Brennan",
+                "first_name": "Aoife",
+                "last_name": "Brennan",
+                "title": "Head of Commercial Strategy",
+                "company_domain": "verdantgrid.co.uk",
+                "company_name": "Verdant Grid",
+                "email": "a***@verdantgrid.co.uk",
+                "phone": null,
+                "city": "Manchester",
+                "country": "GB",
+                "linkedin_url": "https://www.linkedin.com/in/aoife-brennan"
+              },
+              "provenance": {
+                "provider": "sample",
+                "live": false,
+                "matched_on": "person_name",
+                "retrieved_at": "2026-09-06T13:51:29.192218Z",
+                "provider_record_id": "a***@verdantgrid.co.uk"
+              },
+              "message": "Matched contact 'Aoife Brennan' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
+              "found": true
+            },
+            "is_error": false,
+            "duration_ms": 28.35
+          }
+        ],
+        "final_response": "No contact found in CRM for verdantgrid.co.uk. Enriched Aoife Brennan (Head of Commercial Strategy, verdantgrid.co.uk).",
+        "execution_time_ms": 57.64,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "found"
+        ]
+      }
+    },
+    {
+      "scenario_id": "crm-first-decision-maker",
+      "category": "crm_first",
+      "title": "CRM-first check for account decision makers",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "crm-first-decision-maker",
+        "category": "crm_first",
+        "intent": "Check our CRM for any security decision maker at Apex FinTech Labs before doing any external research.",
+        "tool_calls": [
+          {
+            "tool_name": "crm_query",
+            "arguments": {
+              "company_domain": "apexfintech.com",
+              "title_contains": "Security"
+            },
+            "result": {
+              "filters": {
+                "company_domain": "apexfintech.com",
+                "title_contains": "Security",
+                "country": null,
+                "list_name": null,
+                "limit": 25
+              },
+              "contacts": [
+                {
+                  "source": "crm",
+                  "confidence": 1.0,
+                  "retrieved_at": null,
+                  "full_name": "Liam O'Connor",
+                  "first_name": "Liam",
+                  "last_name": "O'Connor",
+                  "title": "Chief Information Security Officer",
+                  "company_domain": "apexfintech.com",
+                  "company_name": null,
+                  "email": "l***@apexfintech.com",
+                  "phone": "[REDACTED_PHONE]",
+                  "city": "New York",
+                  "country": "US",
+                  "linkedin_url": null
+                }
+              ],
+              "message": "Matched 1 CRM contact(s) for company_domain='apexfintech.com', title_contains='Security'. Nothing was modified.",
+              "count": 1,
+              "limit_reached": false
+            },
+            "is_error": false,
+            "duration_ms": 23.79
+          }
+        ],
+        "final_response": "Found Liam O'Connor (CISO) at Apex FinTech Labs in our CRM.",
+        "execution_time_ms": 23.79,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": []
+      }
+    },
+    {
+      "scenario_id": "enrich-company-domain",
+      "category": "enrichment",
+      "title": "Enrich company firmographics by domain",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "enrich-company-domain",
+        "category": "enrichment",
+        "intent": "Research Northwind Logistics by domain northwindlogistics.com and provide their details.",
+        "tool_calls": [
+          {
+            "tool_name": "search_company",
+            "arguments": {
+              "domain_or_name": "northwindlogistics.com"
+            },
+            "result": {
+              "query": {
+                "raw": "northwindlogistics.com",
+                "domain": "northwindlogistics.com",
+                "name": null
+              },
+              "company": {
+                "source": "enrichment",
+                "confidence": 1.0,
+                "retrieved_at": "2026-09-06T13:51:29.314990Z",
+                "domain": "northwindlogistics.com",
+                "name": "Northwind Logistics",
+                "description": "Freight visibility and multi-carrier shipment orchestration.",
+                "industry": "Logistics & Supply Chain",
+                "employee_count": 1200,
+                "city": "Chicago",
+                "state": "IL",
+                "country": "US",
+                "website": "https://northwindlogistics.com",
+                "linkedin_url": "https://www.linkedin.com/company/northwind-logistics"
+              },
+              "provenance": {
+                "provider": "sample",
+                "live": false,
+                "matched_on": "domain",
+                "retrieved_at": "2026-09-06T13:51:29.314990Z",
+                "provider_record_id": "northwindlogistics.com"
+              },
+              "message": "Matched company 'Northwind Logistics' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
+              "found": true
+            },
+            "is_error": false,
+            "duration_ms": 26.87
+          }
+        ],
+        "final_response": "Northwind Logistics: Logistics & Supply Chain, 1200 employees, Chicago, IL.",
+        "execution_time_ms": 26.87,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "found"
+        ]
+      }
+    },
+    {
+      "scenario_id": "enrich-contact-person",
+      "category": "enrichment",
+      "title": "Enrich contact person by title and domain",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "enrich-contact-person",
+        "category": "enrichment",
+        "intent": "Find the VP of Sales at Northwind Logistics (domain: northwindlogistics.com).",
+        "tool_calls": [
+          {
+            "tool_name": "search_contact",
+            "arguments": {
+              "name": "Dana Whitfield",
+              "company": "northwindlogistics.com"
+            },
+            "result": {
+              "query": {
+                "full_name": "Dana Whitfield",
+                "first_name": "Dana",
+                "last_name": "Whitfield",
+                "company": {
+                  "raw": "northwindlogistics.com",
+                  "domain": "northwindlogistics.com",
+                  "name": null
+                }
+              },
+              "contact": {
+                "source": "enrichment",
+                "confidence": 0.91,
+                "retrieved_at": "2026-09-06T13:51:29.376401Z",
+                "full_name": "Dana Whitfield",
+                "first_name": "Dana",
+                "last_name": "Whitfield",
+                "title": "VP of Sales",
+                "company_domain": "northwindlogistics.com",
+                "company_name": "Northwind Logistics",
+                "email": "d***@northwindlogistics.com",
+                "phone": "[REDACTED_PHONE]",
+                "city": "Chicago",
+                "country": "US",
+                "linkedin_url": "https://www.linkedin.com/in/dana-whitfield"
+              },
+              "provenance": {
+                "provider": "sample",
+                "live": false,
+                "matched_on": "person_name",
+                "retrieved_at": "2026-09-06T13:51:29.376401Z",
+                "provider_record_id": "d***@northwindlogistics.com"
+              },
+              "message": "Matched contact 'Dana Whitfield' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
+              "found": true
+            },
+            "is_error": false,
+            "duration_ms": 31.4
+          }
+        ],
+        "final_response": "Found Dana Whitfield, VP of Sales at Northwind Logistics (dana.whitfield@northwindlogistics.com).",
+        "execution_time_ms": 31.4,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "found"
+        ]
+      }
+    },
+    {
+      "scenario_id": "enrich-unknown-domain",
+      "category": "enrichment",
+      "title": "Enrich non-existent company domain",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "enrich-unknown-domain",
+        "category": "enrichment",
+        "intent": "Research the company at nonexistent-domain-xyz999.io.",
+        "tool_calls": [
+          {
+            "tool_name": "search_company",
+            "arguments": {
+              "domain_or_name": "nonexistent-domain-xyz999.io"
+            },
+            "result": {
+              "query": {
+                "raw": "nonexistent-domain-xyz999.io",
+                "domain": "nonexistent-domain-xyz999.io",
+                "name": null
+              },
+              "company": null,
+              "provenance": null,
+              "message": "The sample enrichment provider has no record for 'nonexistent-domain-xyz999.io'. This is a definitive 'not found', not a failure: do not retry the same identifier. If you searched by name, retry with the company's web domain, which matches far more reliably.",
+              "found": false
+            },
+            "is_error": false,
+            "duration_ms": 42.63
+          }
+        ],
+        "final_response": "Could not find any company matching nonexistent-domain-xyz999.io. The domain is not found in provider records.",
+        "execution_time_ms": 42.63,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "not_found"
+        ]
+      }
+    },
+    {
+      "scenario_id": "crm-query-title-filter",
+      "category": "crm_query",
+      "title": "Query CRM by job title substring",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "crm-query-title-filter",
+        "category": "crm_query",
+        "intent": "Show me all Security leaders in our CRM.",
+        "tool_calls": [
+          {
+            "tool_name": "crm_query",
+            "arguments": {
+              "title_contains": "Security"
+            },
+            "result": {
+              "filters": {
+                "company_domain": null,
+                "title_contains": "Security",
+                "country": null,
+                "list_name": null,
+                "limit": 25
+              },
+              "contacts": [
+                {
+                  "source": "crm",
+                  "confidence": 1.0,
+                  "retrieved_at": null,
+                  "full_name": "Liam O'Connor",
+                  "first_name": "Liam",
+                  "last_name": "O'Connor",
+                  "title": "Chief Information Security Officer",
+                  "company_domain": "apexfintech.com",
+                  "company_name": null,
+                  "email": "l***@apexfintech.com",
+                  "phone": "[REDACTED_PHONE]",
+                  "city": "New York",
+                  "country": "US",
+                  "linkedin_url": null
+                },
+                {
+                  "source": "crm",
+                  "confidence": 1.0,
+                  "retrieved_at": null,
+                  "full_name": "Rachel Adams",
+                  "first_name": "Rachel",
+                  "last_name": "Adams",
+                  "title": "Lead Security Operations Engineer",
+                  "company_domain": "cybershield.io",
+                  "company_name": null,
+                  "email": "r***@cybershield.io",
+                  "phone": "[REDACTED_PHONE]",
+                  "city": "Austin",
+                  "country": "US",
+                  "linkedin_url": null
+                }
+              ],
+              "message": "Matched 2 CRM contact(s) for title_contains='Security'. Nothing was modified.",
+              "count": 2,
+              "limit_reached": false
+            },
+            "is_error": false,
+            "duration_ms": 57.54
+          }
+        ],
+        "final_response": "Found Security leaders in CRM: Liam O'Connor and Rachel Adams.",
+        "execution_time_ms": 57.54,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": []
+      }
+    },
+    {
+      "scenario_id": "crm-query-domain-filter",
+      "category": "crm_query",
+      "title": "Query CRM by company domain",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "crm-query-domain-filter",
+        "category": "crm_query",
+        "intent": "Show me all contacts currently recorded in the CRM for cloudscale.io.",
+        "tool_calls": [
+          {
+            "tool_name": "crm_query",
+            "arguments": {
+              "company_domain": "cloudscale.io"
+            },
+            "result": {
+              "filters": {
+                "company_domain": "cloudscale.io",
+                "title_contains": null,
+                "country": null,
+                "list_name": null,
+                "limit": 25
+              },
+              "contacts": [
+                {
+                  "source": "crm",
+                  "confidence": 1.0,
+                  "retrieved_at": null,
+                  "full_name": "Elena Rostova",
+                  "first_name": "Elena",
+                  "last_name": "Rostova",
+                  "title": "VP of Engineering",
+                  "company_domain": "cloudscale.io",
+                  "company_name": null,
+                  "email": "e***@cloudscale.io",
+                  "phone": "[REDACTED_PHONE]",
+                  "city": "San Francisco",
+                  "country": "US",
+                  "linkedin_url": null
+                },
+                {
+                  "source": "crm",
+                  "confidence": 1.0,
+                  "retrieved_at": null,
+                  "full_name": "Marcus Chen",
+                  "first_name": "Marcus",
+                  "last_name": "Chen",
+                  "title": "Principal Infrastructure Architect",
+                  "company_domain": "cloudscale.io",
+                  "company_name": null,
+                  "email": "m***@cloudscale.io",
+                  "phone": "[REDACTED_PHONE]",
+                  "city": "San Francisco",
+                  "country": "US",
+                  "linkedin_url": null
+                }
+              ],
+              "message": "Matched 2 CRM contact(s) for company_domain='cloudscale.io'. Nothing was modified.",
+              "count": 2,
+              "limit_reached": false
+            },
+            "is_error": false,
+            "duration_ms": 46.45
+          }
+        ],
+        "final_response": "Found contacts at cloudscale.io: Elena Rostova and Marcus Chen.",
+        "execution_time_ms": 46.45,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": []
+      }
+    },
+    {
+      "scenario_id": "crm-query-list-filter",
+      "category": "crm_query",
+      "title": "Query CRM by list membership",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "crm-query-list-filter",
+        "category": "crm_query",
+        "intent": "List all contacts currently on the 'Tier-1 Infrastructure' list.",
+        "tool_calls": [
+          {
+            "tool_name": "crm_query",
+            "arguments": {
+              "list_name": "Tier-1 Infrastructure"
+            },
+            "result": {
+              "filters": {
+                "company_domain": null,
+                "title_contains": null,
+                "country": null,
+                "list_name": "Tier-1 Infrastructure",
+                "limit": 25
+              },
+              "contacts": [
+                {
+                  "source": "crm",
+                  "confidence": 1.0,
+                  "retrieved_at": null,
+                  "full_name": "Elena Rostova",
+                  "first_name": "Elena",
+                  "last_name": "Rostova",
+                  "title": "VP of Engineering",
+                  "company_domain": "cloudscale.io",
+                  "company_name": null,
+                  "email": "e***@cloudscale.io",
+                  "phone": "[REDACTED_PHONE]",
+                  "city": "San Francisco",
+                  "country": "US",
+                  "linkedin_url": null
+                }
+              ],
+              "message": "Matched 1 CRM contact(s) for list_name='Tier-1 Infrastructure'. Nothing was modified.",
+              "count": 1,
+              "limit_reached": false
+            },
+            "is_error": false,
+            "duration_ms": 48.56
+          }
+        ],
+        "final_response": "Found contact Elena Rostova in 'Tier-1 Infrastructure'.",
+        "execution_time_ms": 48.56,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": []
+      }
+    },
+    {
+      "scenario_id": "sync-new-contact",
+      "category": "sync",
+      "title": "Sync newly enriched contact to CRM",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "sync-new-contact",
+        "category": "sync",
+        "intent": "Add newly identified contact Dana Whitfield (dana.whitfield@northwindlogistics.com, VP of Sales, northwindlogistics.com) to the CRM.",
+        "tool_calls": [
+          {
+            "tool_name": "sync_to_crm",
+            "arguments": {
+              "contact": {
+                "full_name": "Dana Whitfield",
+                "email": "d***@northwindlogistics.com",
+                "title": "VP of Sales",
+                "company_domain": "northwindlogistics.com"
+              }
+            },
+            "result": {
+              "outcome": "created",
+              "record_id": "65ffdb5b-cc4a-4646-bae2-e6016f747848",
+              "changed_fields": [],
+              "audit_id": "baf8e3e2-0575-48aa-8e7d-339376f4c535",
+              "message": "Created contact 'Dana Whitfield'",
+              "success": true
+            },
+            "is_error": false,
+            "duration_ms": 79.98
+          }
+        ],
+        "final_response": "Contact Dana Whitfield was created and synced to the CRM (added to crm).",
+        "execution_time_ms": 79.98,
+        "audit_events_count": 1,
+        "mutations_count": 1,
+        "recorded_outcomes": [
+          "created"
+        ]
+      }
+    },
+    {
+      "scenario_id": "sync-existing-identical",
+      "category": "sync",
+      "title": "Sync identical existing contact (idempotency)",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "sync-existing-identical",
+        "category": "sync",
+        "intent": "Sync Elena Rostova (elena.rostova@cloudscale.io, VP of Engineering, cloudscale.io) to the CRM.",
+        "tool_calls": [
+          {
+            "tool_name": "sync_to_crm",
+            "arguments": {
+              "contact": {
+                "full_name": "Elena Rostova",
+                "email": "e***@cloudscale.io",
+                "title": "VP of Engineering",
+                "company_domain": "cloudscale.io"
+              }
+            },
+            "result": {
+              "outcome": "unchanged",
+              "record_id": "[REDACTED_PHONE]-1111-1111-[REDACTED_PHONE]",
+              "changed_fields": [],
+              "audit_id": "aea87d50-7c8e-4788-af4f-80748d952baa",
+              "message": "Contact 'Elena Rostova' is unchanged",
+              "success": true
+            },
+            "is_error": false,
+            "duration_ms": 9.81
+          }
+        ],
+        "final_response": "Contact is unchanged; the record is already up to date in the CRM.",
+        "execution_time_ms": 9.81,
+        "audit_events_count": 1,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "unchanged"
+        ]
+      }
+    },
+    {
+      "scenario_id": "sync-update-title",
+      "category": "sync",
+      "title": "Sync existing contact with updated title",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "sync-update-title",
+        "category": "sync",
+        "intent": "Update Marcus Chen at cloudscale.io (marcus.chen@cloudscale.io) with his new title 'VP of Architecture'.",
+        "tool_calls": [
+          {
+            "tool_name": "sync_to_crm",
+            "arguments": {
+              "contact": {
+                "full_name": "Marcus Chen",
+                "email": "m***@cloudscale.io",
+                "title": "VP of Architecture",
+                "company_domain": "cloudscale.io"
+              }
+            },
+            "result": {
+              "outcome": "updated",
+              "record_id": "[REDACTED_PHONE]-2222-2222-[REDACTED_PHONE]",
+              "changed_fields": [
+                "title"
+              ],
+              "audit_id": "f7e0c[REDACTED_PHONE]-bc4e-6a14c9c64e2d",
+              "message": "Updated contact fields: title",
+              "success": true
+            },
+            "is_error": false,
+            "duration_ms": 12.07
+          }
+        ],
+        "final_response": "Updated Marcus Chen at cloudscale.io with new title 'VP of Architecture'.",
+        "execution_time_ms": 12.07,
+        "audit_events_count": 1,
+        "mutations_count": 1,
+        "recorded_outcomes": [
+          "updated"
+        ]
+      }
+    },
+    {
+      "scenario_id": "list-add-existing",
+      "category": "list_add",
+      "title": "Add existing CRM contact to target list",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "list-add-existing",
+        "category": "list_add",
+        "intent": "Add contact ID '11111111-1111-1111-1111-111111111111' to the 'Q4 Enterprise Outreach' list.",
+        "tool_calls": [
+          {
+            "tool_name": "save_to_list",
+            "arguments": {
+              "contact_id": "[REDACTED_PHONE]-1111-1111-[REDACTED_PHONE]",
+              "list_name": "Q4 Enterprise Outreach"
+            },
+            "result": {
+              "outcome": "created",
+              "record_id": "[REDACTED_PHONE]-1111-1111-[REDACTED_PHONE]",
+              "changed_fields": [],
+              "audit_id": "6b71778c-ba4a-4c73-999b-adf28ec24906",
+              "message": "Added contact to list 'Q4 Enterprise Outreach'",
+              "success": true
+            },
+            "is_error": false,
+            "duration_ms": 8.39
+          }
+        ],
+        "final_response": "Contact was added to 'Q4 Enterprise Outreach'.",
+        "execution_time_ms": 8.39,
+        "audit_events_count": 1,
+        "mutations_count": 1,
+        "recorded_outcomes": [
+          "created"
+        ]
+      }
+    },
+    {
+      "scenario_id": "list-add-duplicate",
+      "category": "list_add",
+      "title": "Add contact already in target list",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "list-add-duplicate",
+        "category": "list_add",
+        "intent": "Add contact ID '11111111-1111-1111-1111-111111111111' to the 'Tier-1 Infrastructure' list.",
+        "tool_calls": [
+          {
+            "tool_name": "save_to_list",
+            "arguments": {
+              "contact_id": "[REDACTED_PHONE]-1111-1111-[REDACTED_PHONE]",
+              "list_name": "Tier-1 Infrastructure"
+            },
+            "result": {
+              "outcome": "unchanged",
+              "record_id": "[REDACTED_PHONE]-1111-1111-[REDACTED_PHONE]",
+              "changed_fields": [],
+              "audit_id": "0fa8da19-d422-4549-b46c-e80a451b600c",
+              "message": "Contact already a member of list 'Tier-1 Infrastructure'",
+              "success": true
+            },
+            "is_error": false,
+            "duration_ms": 8.92
+          }
+        ],
+        "final_response": "Contact is already a member of list 'Tier-1 Infrastructure'.",
+        "execution_time_ms": 8.92,
+        "audit_events_count": 1,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "unchanged"
+        ]
+      }
+    },
+    {
+      "scenario_id": "list-add-missing-contact",
+      "category": "list_add",
+      "title": "Add non-existent contact ID to list",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "list-add-missing-contact",
+        "category": "list_add",
+        "intent": "Add contact ID '99999999-9999-9999-9999-999999999999' to the 'Target Accounts' list.",
+        "tool_calls": [
+          {
+            "tool_name": "save_to_list",
+            "arguments": {
+              "contact_id": "[REDACTED_PHONE]-9999-9999-[REDACTED_PHONE]",
+              "list_name": "Target Accounts"
+            },
+            "result": {
+              "outcome": "failed",
+              "record_id": "[REDACTED_PHONE]-9999-9999-[REDACTED_PHONE]",
+              "changed_fields": [],
+              "audit_id": "61ea69a0-2e69-40f6-a93b-c40c[REDACTED_PHONE]",
+              "message": "No CRM contact has identifier '[REDACTED_PHONE]-9999-9999-[REDACTED_PHONE]'. Nothing was added to any list. Find the contact with crm_query, or create it with sync_to_crm first, then retry with the identifier that call returned.",
+              "success": false
+            },
+            "is_error": false,
+            "duration_ms": 14.59
+          }
+        ],
+        "final_response": "Operation failed: Contact '99999999-9999-9999-9999-999999999999' was not found in the CRM, so could not add to list.",
+        "execution_time_ms": 14.59,
+        "audit_events_count": 1,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "failed"
+        ]
+      }
+    },
+    {
+      "scenario_id": "sequence-research-sync-list",
+      "category": "sequencing",
+      "title": "Multi-step sequence: Research -> Sync -> Save to List",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "sequence-research-sync-list",
+        "category": "sequencing",
+        "intent": "Research Dana Whitfield at Northwind Logistics (northwindlogistics.com), sync her into our CRM, and add her to the 'Target Accounts' list.",
+        "tool_calls": [
+          {
+            "tool_name": "search_contact",
+            "arguments": {
+              "name": "Dana Whitfield",
+              "company": "northwindlogistics.com"
+            },
+            "result": {
+              "query": {
+                "full_name": "Dana Whitfield",
+                "first_name": "Dana",
+                "last_name": "Whitfield",
+                "company": {
+                  "raw": "northwindlogistics.com",
+                  "domain": "northwindlogistics.com",
+                  "name": null
+                }
+              },
+              "contact": {
+                "source": "enrichment",
+                "confidence": 0.91,
+                "retrieved_at": "2026-09-06T13:51:30.342983Z",
+                "full_name": "Dana Whitfield",
+                "first_name": "Dana",
+                "last_name": "Whitfield",
+                "title": "VP of Sales",
+                "company_domain": "northwindlogistics.com",
+                "company_name": "Northwind Logistics",
+                "email": "d***@northwindlogistics.com",
+                "phone": "[REDACTED_PHONE]",
+                "city": "Chicago",
+                "country": "US",
+                "linkedin_url": "https://www.linkedin.com/in/dana-whitfield"
+              },
+              "provenance": {
+                "provider": "sample",
+                "live": false,
+                "matched_on": "person_name",
+                "retrieved_at": "2026-09-06T13:51:30.342983Z",
+                "provider_record_id": "d***@northwindlogistics.com"
+              },
+              "message": "Matched contact 'Dana Whitfield' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
+              "found": true
+            },
+            "is_error": false,
+            "duration_ms": 61.84
+          },
+          {
+            "tool_name": "sync_to_crm",
+            "arguments": {
+              "contact": {
+                "full_name": "Dana Whitfield",
+                "email": "d***@northwindlogistics.com",
+                "title": "VP of Sales",
+                "company_domain": "northwindlogistics.com"
+              }
+            },
+            "result": {
+              "outcome": "created",
+              "record_id": "13943e49-23fc-4818-bc6d-b14211ae24c2",
+              "changed_fields": [],
+              "audit_id": "99a3d1ad-4206-4bd5-9bee-5a6f1479fe44",
+              "message": "Created contact 'Dana Whitfield'",
+              "success": true
+            },
+            "is_error": false,
+            "duration_ms": 15.01
+          },
+          {
+            "tool_name": "save_to_list",
+            "arguments": {
+              "contact_id": "13943e49-23fc-4818-bc6d-b14211ae24c2",
+              "list_name": "Target Accounts"
+            },
+            "result": {
+              "outcome": "created",
+              "record_id": "13943e49-23fc-4818-bc6d-b14211ae24c2",
+              "changed_fields": [],
+              "audit_id": "93f43f78-5c2f-47d8-8457-5c4b8d22ddce",
+              "message": "Added contact to list 'Target Accounts'",
+              "success": true
+            },
+            "is_error": false,
+            "duration_ms": 11.5
+          }
+        ],
+        "final_response": "Researched Dana Whitfield at Northwind Logistics, synced her to CRM, and added her to Target Accounts.",
+        "execution_time_ms": 88.35000000000001,
+        "audit_events_count": 2,
+        "mutations_count": 2,
+        "recorded_outcomes": [
+          "found",
+          "created",
+          "created"
+        ]
+      }
+    },
+    {
+      "scenario_id": "sequence-crm-then-enrich-sync",
+      "category": "sequencing",
+      "title": "Multi-step sequence: Check CRM -> Enrich -> Sync",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "sequence-crm-then-enrich-sync",
+        "category": "sequencing",
+        "intent": "Check if Aoife Brennan is in our CRM; if missing, enrich her from Verdant Grid (verdantgrid.co.uk) and sync her.",
+        "tool_calls": [
+          {
+            "tool_name": "crm_query",
+            "arguments": {
+              "company_domain": "verdantgrid.co.uk"
+            },
+            "result": {
+              "filters": {
+                "company_domain": "verdantgrid.co.uk",
+                "title_contains": null,
+                "country": null,
+                "list_name": null,
+                "limit": 25
+              },
+              "contacts": [],
+              "message": "No CRM contact matches company_domain='verdantgrid.co.uk'. This is a successful query with an empty result, not a failure: the CRM holds no such record. Relax a filter or use search_contact to look the person up externally.",
+              "count": 0,
+              "limit_reached": false
+            },
+            "is_error": false,
+            "duration_ms": 35.58
+          },
+          {
+            "tool_name": "search_contact",
+            "arguments": {
+              "name": "Aoife Brennan",
+              "company": "verdantgrid.co.uk"
+            },
+            "result": {
+              "query": {
+                "full_name": "Aoife Brennan",
+                "first_name": "Aoife",
+                "last_name": "Brennan",
+                "company": {
+                  "raw": "verdantgrid.co.uk",
+                  "domain": "verdantgrid.co.uk",
+                  "name": null
+                }
+              },
+              "contact": {
+                "source": "enrichment",
+                "confidence": 0.79,
+                "retrieved_at": "2026-09-06T13:51:30.525139Z",
+                "full_name": "Aoife Brennan",
+                "first_name": "Aoife",
+                "last_name": "Brennan",
+                "title": "Head of Commercial Strategy",
+                "company_domain": "verdantgrid.co.uk",
+                "company_name": "Verdant Grid",
+                "email": "a***@verdantgrid.co.uk",
+                "phone": null,
+                "city": "Manchester",
+                "country": "GB",
+                "linkedin_url": "https://www.linkedin.com/in/aoife-brennan"
+              },
+              "provenance": {
+                "provider": "sample",
+                "live": false,
+                "matched_on": "person_name",
+                "retrieved_at": "2026-09-06T13:51:30.525139Z",
+                "provider_record_id": "a***@verdantgrid.co.uk"
+              },
+              "message": "Matched contact 'Aoife Brennan' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
+              "found": true
+            },
+            "is_error": false,
+            "duration_ms": 46.34
+          },
+          {
+            "tool_name": "sync_to_crm",
+            "arguments": {
+              "contact": {
+                "full_name": "Aoife Brennan",
+                "email": "a***@verdantgrid.co.uk",
+                "title": "Head of Commercial Strategy",
+                "company_domain": "verdantgrid.co.uk"
+              }
+            },
+            "result": {
+              "outcome": "created",
+              "record_id": "a3ad906d-0f55-4cd8-b91f-eb6c38862f3a",
+              "changed_fields": [],
+              "audit_id": "abeb59f0-0de6-4a3c-86da-c2145dbd89bf",
+              "message": "Created contact 'Aoife Brennan'",
+              "success": true
+            },
+            "is_error": false,
+            "duration_ms": 10.58
+          }
+        ],
+        "final_response": "Checked CRM, enriched Aoife Brennan at Verdant Grid, and synced her.",
+        "execution_time_ms": 92.5,
+        "audit_events_count": 1,
+        "mutations_count": 1,
+        "recorded_outcomes": [
+          "found",
+          "created"
+        ]
+      }
+    },
+    {
+      "scenario_id": "sequence-company-then-contact",
+      "category": "sequencing",
+      "title": "Multi-step sequence: Company research then Contact research",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "sequence-company-then-contact",
+        "category": "sequencing",
+        "intent": "First research Northwind Logistics (northwindlogistics.com) company background, then find their VP of Sales.",
+        "tool_calls": [
+          {
+            "tool_name": "search_company",
+            "arguments": {
+              "domain_or_name": "northwindlogistics.com"
+            },
+            "result": {
+              "query": {
+                "raw": "northwindlogistics.com",
+                "domain": "northwindlogistics.com",
+                "name": null
+              },
+              "company": {
+                "source": "enrichment",
+                "confidence": 1.0,
+                "retrieved_at": "2026-09-06T13:51:30.630096Z",
+                "domain": "northwindlogistics.com",
+                "name": "Northwind Logistics",
+                "description": "Freight visibility and multi-carrier shipment orchestration.",
+                "industry": "Logistics & Supply Chain",
+                "employee_count": 1200,
+                "city": "Chicago",
+                "state": "IL",
+                "country": "US",
+                "website": "https://northwindlogistics.com",
+                "linkedin_url": "https://www.linkedin.com/company/northwind-logistics"
+              },
+              "provenance": {
+                "provider": "sample",
+                "live": false,
+                "matched_on": "domain",
+                "retrieved_at": "2026-09-06T13:51:30.630096Z",
+                "provider_record_id": "northwindlogistics.com"
+              },
+              "message": "Matched company 'Northwind Logistics' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
+              "found": true
+            },
+            "is_error": false,
+            "duration_ms": 35.0
+          },
+          {
+            "tool_name": "search_contact",
+            "arguments": {
+              "name": "Dana Whitfield",
+              "company": "northwindlogistics.com"
+            },
+            "result": {
+              "query": {
+                "full_name": "Dana Whitfield",
+                "first_name": "Dana",
+                "last_name": "Whitfield",
+                "company": {
+                  "raw": "northwindlogistics.com",
+                  "domain": "northwindlogistics.com",
+                  "name": null
+                }
+              },
+              "contact": {
+                "source": "enrichment",
+                "confidence": 0.91,
+                "retrieved_at": "2026-09-06T13:51:30.665397Z",
+                "full_name": "Dana Whitfield",
+                "first_name": "Dana",
+                "last_name": "Whitfield",
+                "title": "VP of Sales",
+                "company_domain": "northwindlogistics.com",
+                "company_name": "Northwind Logistics",
+                "email": "d***@northwindlogistics.com",
+                "phone": "[REDACTED_PHONE]",
+                "city": "Chicago",
+                "country": "US",
+                "linkedin_url": "https://www.linkedin.com/in/dana-whitfield"
+              },
+              "provenance": {
+                "provider": "sample",
+                "live": false,
+                "matched_on": "person_name",
+                "retrieved_at": "2026-09-06T13:51:30.665397Z",
+                "provider_record_id": "d***@northwindlogistics.com"
+              },
+              "message": "Matched contact 'Dana Whitfield' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
+              "found": true
+            },
+            "is_error": false,
+            "duration_ms": 45.76
+          }
+        ],
+        "final_response": "Researched Northwind Logistics, then identified Dana Whitfield.",
+        "execution_time_ms": 80.75999999999999,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "found",
+          "found"
+        ]
+      }
+    },
+    {
+      "scenario_id": "idempotency-repeat-sync",
+      "category": "idempotency",
+      "title": "Repeat contact sync idempotency",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "idempotency-repeat-sync",
+        "category": "idempotency",
+        "intent": "Sync Carlos Mendez (carlos.mendez@dataflow.ai, Chief Technology Officer, dataflow.ai) again.",
+        "tool_calls": [
+          {
+            "tool_name": "sync_to_crm",
+            "arguments": {
+              "contact": {
+                "full_name": "Carlos Mendez",
+                "email": "c***@dataflow.ai",
+                "title": "Chief Technology Officer",
+                "company_domain": "dataflow.ai"
+              }
+            },
+            "result": {
+              "outcome": "unchanged",
+              "record_id": "[REDACTED_PHONE]-5555-5555-[REDACTED_PHONE]",
+              "changed_fields": [],
+              "audit_id": "1d9d71bf-d3b3-4281-a4da-44e[REDACTED_PHONE]",
+              "message": "Contact 'Carlos Mendez' is unchanged",
+              "success": true
+            },
+            "is_error": false,
+            "duration_ms": 10.42
+          }
+        ],
+        "final_response": "Contact is unchanged; the record is already up to date in the CRM.",
+        "execution_time_ms": 10.42,
+        "audit_events_count": 1,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "unchanged"
+        ]
+      }
+    },
+    {
+      "scenario_id": "idempotency-repeat-list-add",
+      "category": "idempotency",
+      "title": "Repeat list addition idempotency",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "idempotency-repeat-list-add",
+        "category": "idempotency",
+        "intent": "Ensure contact ID '22222222-2222-2222-2222-222222222222' is in the 'Infrastructure Architects' list.",
+        "tool_calls": [
+          {
+            "tool_name": "save_to_list",
+            "arguments": {
+              "contact_id": "[REDACTED_PHONE]-2222-2222-[REDACTED_PHONE]",
+              "list_name": "Infrastructure Architects"
+            },
+            "result": {
+              "outcome": "unchanged",
+              "record_id": "[REDACTED_PHONE]-2222-2222-[REDACTED_PHONE]",
+              "changed_fields": [],
+              "audit_id": "f50a5e22-fcd2-4cca-85e9-8f9dfd6ff838",
+              "message": "Contact already a member of list 'Infrastructure Architects'",
+              "success": true
+            },
+            "is_error": false,
+            "duration_ms": 11.3
+          }
+        ],
+        "final_response": "Contact is already a member of list 'Infrastructure Architects'.",
+        "execution_time_ms": 11.3,
+        "audit_events_count": 1,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "unchanged"
+        ]
+      }
+    },
+    {
+      "scenario_id": "rejection-sync-disabled",
+      "category": "write_rejection",
+      "title": "Sync rejected when write tools disabled",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "rejection-sync-disabled",
+        "category": "write_rejection",
+        "intent": "Sync new contact Priya Sharma (priya.sharma@dataflow.ai) to our CRM.",
+        "tool_calls": [
+          {
+            "tool_name": "sync_to_crm",
+            "arguments": {
+              "contact": {
+                "full_name": "Priya Sharma",
+                "email": "p***@dataflow.ai",
+                "company_domain": "dataflow.ai"
+              }
+            },
+            "result": {
+              "outcome": "rejected",
+              "record_id": null,
+              "changed_fields": [],
+              "audit_id": "[REDACTED_PHONE]-f996-44e1-915a-a67268e37e6b",
+              "message": "Write tools are disabled on this server (enable_write_tools is false), so NOTHING WAS WRITTEN. This is a server configuration choice, not a problem with your request: retrying will fail identically. Tell the user that CRM writes are turned off and that an operator must enable them. Read-only tools such as crm_query and search_contact still work.",
+              "success": false
+            },
+            "is_error": false,
+            "duration_ms": 15.71
+          }
+        ],
+        "final_response": "Write operation was rejected: writes are disabled on this server.",
+        "execution_time_ms": 15.71,
+        "audit_events_count": 1,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "rejected"
+        ]
+      }
+    },
+    {
+      "scenario_id": "rejection-list-disabled",
+      "category": "write_rejection",
+      "title": "List save rejected when write tools disabled",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "rejection-list-disabled",
+        "category": "write_rejection",
+        "intent": "Add contact ID '11111111-1111-1111-1111-111111111111' to the 'Executive Outreach' list.",
+        "tool_calls": [
+          {
+            "tool_name": "save_to_list",
+            "arguments": {
+              "contact_id": "[REDACTED_PHONE]-1111-1111-[REDACTED_PHONE]",
+              "list_name": "Executive Outreach"
+            },
+            "result": {
+              "outcome": "rejected",
+              "record_id": null,
+              "changed_fields": [],
+              "audit_id": "6115aa76-a8ad-4a9c-90c5-6efdfeb23e2a",
+              "message": "Write tools are disabled on this server (enable_write_tools is false), so NOTHING WAS WRITTEN. This is a server configuration choice, not a problem with your request: retrying will fail identically. Tell the user that CRM writes are turned off and that an operator must enable them. Read-only tools such as crm_query and search_contact still work.",
+              "success": false
+            },
+            "is_error": false,
+            "duration_ms": 9.52
+          }
+        ],
+        "final_response": "Operation rejected: write tools are disabled on this server.",
+        "execution_time_ms": 9.52,
+        "audit_events_count": 1,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "rejected"
+        ]
+      }
+    },
+    {
+      "scenario_id": "dryrun-sync",
+      "category": "dry_run",
+      "title": "Sync executed under dry_run_writes=True",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "dryrun-sync",
+        "category": "dry_run",
+        "intent": "Sync contact Danielle Brooks (danielle.brooks@nexishealth.co, Director of Enterprise Systems, nexishealth.co) to the CRM.",
+        "tool_calls": [
+          {
+            "tool_name": "sync_to_crm",
+            "arguments": {
+              "contact": {
+                "full_name": "Danielle Brooks",
+                "email": "d***@nexishealth.co",
+                "title": "Director of Enterprise Systems",
+                "company_domain": "nexishealth.co"
+              }
+            },
+            "result": {
+              "outcome": "dry_run",
+              "record_id": null,
+              "changed_fields": [],
+              "audit_id": "f2ccbfcc-9789-4f09-9c52-a7165edc254a",
+              "message": "Validated an upsert of contact 'Danielle Brooks'; it would have been created or updated in the CRM. NOTHING WAS WRITTEN: this server is configured with dry_run_writes enabled. Do not report this change as done.",
+              "success": false
+            },
+            "is_error": false,
+            "duration_ms": 14.4
+          }
+        ],
+        "final_response": "Dry run simulation completed: simulated sync for Danielle Brooks. No changes were made to the database.",
+        "execution_time_ms": 14.4,
+        "audit_events_count": 1,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "dry_run"
+        ]
+      }
+    },
+    {
+      "scenario_id": "dryrun-list-add",
+      "category": "dry_run",
+      "title": "List add executed under dry_run_writes=True",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "dryrun-list-add",
+        "category": "dry_run",
+        "intent": "Add contact ID '11111111-1111-1111-1111-111111111111' to the 'Priority Accounts' list.",
+        "tool_calls": [
+          {
+            "tool_name": "save_to_list",
+            "arguments": {
+              "contact_id": "[REDACTED_PHONE]-1111-1111-[REDACTED_PHONE]",
+              "list_name": "Priority Accounts"
+            },
+            "result": {
+              "outcome": "dry_run",
+              "record_id": "[REDACTED_PHONE]-1111-1111-[REDACTED_PHONE]",
+              "changed_fields": [],
+              "audit_id": "4077bf4b-1958-4e03-8cd2-d8a24ab8f3bf",
+              "message": "Validated adding contact '[REDACTED_PHONE]-1111-1111-[REDACTED_PHONE]' to list 'Priority Accounts'; the membership would have been created. NOTHING WAS WRITTEN: this server is configured with dry_run_writes enabled. Do not report this change as done.",
+              "success": false
+            },
+            "is_error": false,
+            "duration_ms": 9.96
+          }
+        ],
+        "final_response": "Dry run completed: simulated list addition. No changes made to list membership.",
+        "execution_time_ms": 9.96,
+        "audit_events_count": 1,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "dry_run"
+        ]
+      }
+    },
+    {
+      "scenario_id": "failure-invalid-email",
+      "category": "failure_handling",
+      "title": "Handle invalid email format validation failure",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "failure-invalid-email",
+        "category": "failure_handling",
+        "intent": "Sync contact John Doe with email 'invalid-email-address' to the CRM.",
+        "tool_calls": [
+          {
+            "tool_name": "sync_to_crm",
+            "arguments": {
+              "contact": {
+                "full_name": "John Doe",
+                "email": "invalid-email-address",
+                "company_domain": "example.com"
+              }
+            },
+            "result": {
+              "error": "[TextContent(type='text', text=\"Error executing tool sync_to_crm: 1 validation error for sync_to_crmArguments\\ncontact.email\\n  Value error, 'invalid-email-address' is not an email address. Supply a work address such as 'f***@example.com', or omit the field entirely. [type=value_error, input_value='invalid-email-address', input_type=str]\\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\", annotations=None, meta=None)]"
+            },
+            "is_error": true,
+            "duration_ms": 0.69
+          }
+        ],
+        "final_response": "Validation error: invalid email address. Sync failed and could not create contact.",
+        "execution_time_ms": 0.69,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "failed"
+        ]
+      }
+    },
+    {
+      "scenario_id": "failure-empty-search",
+      "category": "failure_handling",
+      "title": "Handle empty enrichment search results",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "failure-empty-search",
+        "category": "failure_handling",
+        "intent": "Find the Chief Operating Officer at Northwind Logistics (domain: northwindlogistics.com).",
+        "tool_calls": [
+          {
+            "tool_name": "search_contact",
+            "arguments": {
+              "name": "Jane Doe",
+              "company": "northwindlogistics.com"
+            },
+            "result": {
+              "query": {
+                "full_name": "Jane Doe",
+                "first_name": "Jane",
+                "last_name": "Doe",
+                "company": {
+                  "raw": "northwindlogistics.com",
+                  "domain": "northwindlogistics.com",
+                  "name": null
+                }
+              },
+              "contact": null,
+              "provenance": null,
+              "message": "The sample enrichment provider has no record for a person by that name at 'northwindlogistics.com'. This is a definitive 'not found', not a failure: do not retry the same pair. Check the spelling of the name, or supply the employer's web domain instead of its name.",
+              "found": false
+            },
+            "is_error": false,
+            "duration_ms": 46.03
+          }
+        ],
+        "final_response": "Unable to find contact at Northwind Logistics; no contact found.",
+        "execution_time_ms": 46.03,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "not_found"
+        ]
+      }
+    },
+    {
+      "scenario_id": "boundary-crm-lookup-only",
+      "category": "read_write_boundary",
+      "title": "Read-only CRM lookup must never trigger writes",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "boundary-crm-lookup-only",
+        "category": "read_write_boundary",
+        "intent": "Look up Elena Rostova's phone number and email in our CRM.",
+        "tool_calls": [
+          {
+            "tool_name": "crm_query",
+            "arguments": {
+              "company_domain": "cloudscale.io",
+              "title_contains": "VP of Engineering"
+            },
+            "result": {
+              "filters": {
+                "company_domain": "cloudscale.io",
+                "title_contains": "VP of Engineering",
+                "country": null,
+                "list_name": null,
+                "limit": 25
+              },
+              "contacts": [
+                {
+                  "source": "crm",
+                  "confidence": 1.0,
+                  "retrieved_at": null,
+                  "full_name": "Elena Rostova",
+                  "first_name": "Elena",
+                  "last_name": "Rostova",
+                  "title": "VP of Engineering",
+                  "company_domain": "cloudscale.io",
+                  "company_name": null,
+                  "email": "e***@cloudscale.io",
+                  "phone": "[REDACTED_PHONE]",
+                  "city": "San Francisco",
+                  "country": "US",
+                  "linkedin_url": null
+                }
+              ],
+              "message": "Matched 1 CRM contact(s) for company_domain='cloudscale.io', title_contains='VP of Engineering'. Nothing was modified.",
+              "count": 1,
+              "limit_reached": false
+            },
+            "is_error": false,
+            "duration_ms": 38.62
+          }
+        ],
+        "final_response": "Elena Rostova: email elena.rostova@cloudscale.io, phone [REDACTED_PHONE].",
+        "execution_time_ms": 38.62,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": []
+      }
+    },
+    {
+      "scenario_id": "boundary-company-intel-only",
+      "category": "read_write_boundary",
+      "title": "Read-only company intel query must never trigger writes",
+      "passed": true,
+      "scores": {
+        "tool_selection": 1.0,
+        "sequence": 1.0,
+        "efficiency": 1.0,
+        "outcome": 1.0,
+        "safety_interpretation": 1.0,
+        "policy_adherence": 1.0,
+        "final_response": 1.0,
+        "composite": 1.0
+      },
+      "violations": [],
+      "trace": {
+        "scenario_id": "boundary-company-intel-only",
+        "category": "read_write_boundary",
+        "intent": "What is the employee headcount and primary industry of Northwind Logistics?",
+        "tool_calls": [
+          {
+            "tool_name": "search_company",
+            "arguments": {
+              "domain_or_name": "northwindlogistics.com"
+            },
+            "result": {
+              "query": {
+                "raw": "northwindlogistics.com",
+                "domain": "northwindlogistics.com",
+                "name": null
+              },
+              "company": {
+                "source": "enrichment",
+                "confidence": 1.0,
+                "retrieved_at": "2026-09-06T13:51:31.377781Z",
+                "domain": "northwindlogistics.com",
+                "name": "Northwind Logistics",
+                "description": "Freight visibility and multi-carrier shipment orchestration.",
+                "industry": "Logistics & Supply Chain",
+                "employee_count": 1200,
+                "city": "Chicago",
+                "state": "IL",
+                "country": "US",
+                "website": "https://northwindlogistics.com",
+                "linkedin_url": "https://www.linkedin.com/company/northwind-logistics"
+              },
+              "provenance": {
+                "provider": "sample",
+                "live": false,
+                "matched_on": "domain",
+                "retrieved_at": "2026-09-06T13:51:31.377781Z",
+                "provider_record_id": "northwindlogistics.com"
+              },
+              "message": "Matched company 'Northwind Logistics' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
+              "found": true
+            },
+            "is_error": false,
+            "duration_ms": 52.84
+          }
+        ],
+        "final_response": "Northwind Logistics: 1200 employees, Logistics & Supply Chain industry.",
+        "execution_time_ms": 52.84,
+        "audit_events_count": 0,
+        "mutations_count": 0,
+        "recorded_outcomes": [
+          "found"
+        ]
+      }
+    }
+  ]
+}

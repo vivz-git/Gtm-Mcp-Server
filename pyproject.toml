@@ -52,7 +52,7 @@ packages = ["src/gtm_mcp"]
 [tool.ruff]
 line-length = 100
 target-version = "py313"
-src = ["src", "tests"]
+src = ["src", "tests", "eval"]
 
 [tool.ruff.lint]
 select = [
@@ -81,7 +81,8 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 # Tests may use assert, skip docstrings, and hardcode fixture "secrets".
-"tests/**" = ["S101", "D100", "D101", "D102", "D103", "D104", "ANN201", "ANN001"]
+"tests/**" = ["S101", "S105", "D100", "D101", "D102", "D103", "D104", "ANN201", "ANN001"]
+"eval/**" = ["S101", "S105", "ANN401", "E501"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -94,7 +95,7 @@ ban-relative-imports = "parents"
 # ---------------------------------------------------------------------------
 [tool.mypy]
 python_version = "3.13"
-files = ["src", "tests"]
+files = ["src", "tests", "eval"]
 strict = true
 warn_unreachable = true
 warn_return_any = true
@@ -112,6 +113,7 @@ disallow_untyped_defs = false
 [tool.pytest.ini_options]
 minversion = "9.0"
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = [
     "-ra",
     "--strict-markers",
