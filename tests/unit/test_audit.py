@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from gtm_mcp.audit.events import AuditEvent, AuditOperation
-from gtm_mcp.audit.sinks import AuditSink, InMemoryAuditSink
+from gtm_mcp.audit.sinks import AuditSink, InMemoryAuditSink, LoggingAuditSink, PostgresAuditSink
 from gtm_mcp.domain.results import WriteOutcome
 
 
@@ -69,3 +69,5 @@ async def test_failed_and_rejected_writes_are_still_audited() -> None:
 @pytest.mark.unit
 def test_sinks_satisfy_the_protocol_structurally() -> None:
     assert isinstance(InMemoryAuditSink(), AuditSink)
+    assert isinstance(LoggingAuditSink(), AuditSink)
+    assert issubclass(PostgresAuditSink, AuditSink)

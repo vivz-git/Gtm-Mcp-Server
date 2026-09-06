@@ -240,3 +240,73 @@ returns, so the choice can be made late without reshaping the domain.
 
 **Consequences.** The server starts and serves read-only tools with no third-party
 credential configured.
+
+---
+
+## D-014 — Contact identity strategy: email primary, provider key secondary, no name-company coalescing
+
+**Date:** 2026-09-06 · **Status:** Accepted
+
+**Context.** Upsert idempotency requires identifying whether an incoming contact matches an
+existing CRM record. Earlier notes contemplated using name + company as a fallback natural key.
+
+**Decision.**
+1. Normalized, lowercased `email` is the primary and strongest natural identity when available.
+2. `(provider_name, provider_contact_id)` serves as secondary natural identity when email is
+   unavailable (e.g. enrichment vendor leads).
+3. If neither exists, the record must not be falsely coalesced based on `name + company`.
+   Instead, it is inserted as a distinct record.
+
+**Why.** Common names (e.g., "Alex Chen" or "Sarah Smith") are frequent within large enterprise
+accounts (e.g., Google, Amazon, Microsoft). Coalescing on name and company creates severe data
+corruption by merging distinct individuals into one record. Enforcing partial unique indexes
+in PostgreSQL (`WHERE email IS NOT NULL` and `WHERE provider_name IS NOT NULL AND provider_contact_id IS NOT NULL`)
+guarantees natural identity uniqueness while allowing multiple email-less contacts to exist safely.
+
+**Consequences.** Implemented in `PostgresCrmRepository.upsert_contact` and covered by
+`test_contact_identity_rule_does_not_coalesce_without_email`.
+
+---
+
+## D-015 — CRM-vs-enrichment conflict policy: CRM is authoritative
+
+**Date:** 2026-09-06 · **Status:** Accepted
+
+**Context.** When external enrichment runs against an existing CRM record, fields may conflict
+(e.g., a changed job title or phone number).
+
+**Decision.**
+1. CRM-curated data (`RecordSource.CRM`) is authoritative over external enrichment data
+   (`RecordSource.ENRICHMENT`). Enrichment may populate empty (`None`/`NULL`) fields or update
+   enrichment-owned fields, but must never silently overwrite curated CRM fields.
+2. Incoming writes must never overwrite a populated field with `None`/`NULL`.
+
+**Why.** Human sales reps and RevOps operators routinely verify prospect details directly. External
+enrichment APIs often lag by months or return generalized scraper titles. Letting an automated
+enrichment sync overwrite human-curated data silently destroys business value.
+
+**Consequences.** Implemented in `PostgresCrmRepository.upsert_contact` and covered by
+`test_conflict_policy_crm_is_authoritative_over_enrichment` and
+`test_never_overwrite_populated_field_with_none`.
+
+---
+
+## D-016 — Database constraints and Alembic migration management
+
+**Date:** 2026-09-06 · **Status:** Accepted
+
+**Context.** The mock CRM runs on PostgreSQL. The write safety invariants established in Phase 1
+(no delete, idempotent list membership, audit trail integrity) need durability guarantees.
+
+**Decision.**
+1. Manage all schema changes through Alembic async migrations in `alembic/versions`.
+2. Enforce list membership uniqueness via `UniqueConstraint("list_id", "contact_id")`.
+3. Enforce the non-destructive write invariant at the database engine level via
+   `CheckConstraint("operation IN ('upsert', 'list_add')", name="ck_audit_log_no_delete")` on `audit_log`.
+
+**Why.** Code review and application-level checks are necessary but insufficient for data
+integrity. Structural constraints enforced by PostgreSQL guarantee that accidental manual queries
+or future code bugs cannot delete records or duplicate list memberships.
+
+**Consequences.** Covered by `tests/integration/test_schema_and_migrations.py`.
+

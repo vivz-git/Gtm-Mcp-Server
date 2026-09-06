@@ -13,6 +13,7 @@ from collections.abc import AsyncIterator, Callable
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from typing import TYPE_CHECKING
 
+from gtm_mcp.audit.postgres import PostgresAuditSink
 from gtm_mcp.audit.sinks import LoggingAuditSink
 from gtm_mcp.context import AppContext
 from gtm_mcp.db.engine import build_engine, build_session_factory, check_connection
@@ -74,7 +75,9 @@ def make_lifespan(
             await engine.dispose()
         else:
             context.engine = engine
-            context.session_factory = build_session_factory(engine)
+            session_factory = build_session_factory(engine)
+            context.session_factory = session_factory
+            context.audit_sink = PostgresAuditSink(session_factory)
             context.database_available = True
 
         _log.info(

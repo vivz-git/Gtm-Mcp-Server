@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Protocol, runtime_checkable
 
 from gtm_mcp.audit.events import AuditEvent
+from gtm_mcp.audit.postgres import PostgresAuditSink
 from gtm_mcp.logging_setup import get_logger
 
 _log = get_logger(__name__)
@@ -67,3 +68,6 @@ class InMemoryAuditSink:
             event: The event to record.
         """
         self.events.append(event)
+
+
+__all__ = ["AuditSink", "InMemoryAuditSink", "LoggingAuditSink", "PostgresAuditSink"]

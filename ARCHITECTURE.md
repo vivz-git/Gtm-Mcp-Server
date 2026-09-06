@@ -29,8 +29,8 @@ A modular monolith: one process, layered internally, dependencies pointing inwar
 │    CrmRepository  ← no delete method exists here                   │
 ├──────────────────────────┬─────────────────────────────────────────┤
 │  Provider adapters       │  CRM adapters                           │
-│  gtm_mcp/providers/      │  gtm_mcp/crm/          (next phase)     │
-│  external HTTP APIs      │  PostgreSQL mock CRM, real CRM later    │
+│  gtm_mcp/providers/      │  gtm_mcp/crm/                           │
+│  external HTTP APIs      │  PostgresCrmRepository, mock seed       │
 └──────────────────────────┴─────────────────────────────────────────┘
 
 Cross-cutting: settings.py · errors.py · logging_setup.py · audit/ · context.py
@@ -50,8 +50,10 @@ know nothing about JSON-RPC, which is what makes them testable without a protoco
 | `gtm_mcp/domain/models.py` | Canonical `Company`, `Contact`, `ContactFilter`. Vendor-neutral. |
 | `gtm_mcp/domain/results.py` | `WriteResult` / `WriteOutcome`: the write-honesty contract. |
 | `gtm_mcp/ports.py` | Protocols for enrichment providers and the CRM repository. |
-| `gtm_mcp/audit/` | `AuditEvent` and pluggable sinks. |
+| `gtm_mcp/audit/` | `AuditEvent`, `LoggingAuditSink`, `InMemoryAuditSink`, `PostgresAuditSink`. |
 | `gtm_mcp/db/engine.py` | Async engine, session factory, bounded startup probe. |
+| `gtm_mcp/db/models.py` | SQLAlchemy ORM models: `companies`, `contacts`, `lists`, `list_members`, `audit_log`. |
+| `gtm_mcp/crm/` | `PostgresCrmRepository` and reproducible mock CRM seed mechanism. |
 | `gtm_mcp/server/` | Server construction and lifespan. |
 | `gtm_mcp/tools/` | MCP tool definitions, one module per capability group. |
 
@@ -95,17 +97,30 @@ These are enforced by code and covered by tests, not asserted in prose.
 | stdio protocol stream stays clean | All logging to stderr, configured in the lifespan | `test_logs_never_reach_stdout` |
 | Personal data stays out of logs | Central redaction processor | `test_sensitive_fields_are_redacted` |
 | Startup cannot hang on a bad DSN | Bounded probe (`anyio.fail_after` + driver timeout) | `test_probe_is_bounded_by_its_timeout` |
+| No delete at database level | Check constraint `ck_audit_log_no_delete` on `audit_log` | `test_audit_log_check_constraint_rejects_delete_operation` |
+| No duplicate list members | Unique constraint `uq_list_members_list_contact` | `test_list_members_enforces_unique_contact_per_list` |
+| Zero tool changes for mock CRM | Tool layer untouched; boundary maintained | Contract tests + git status |
 
-## Idempotency
+## Idempotency and Natural Identity
 
-Both writes are upserts keyed by a natural identifier — `Company.domain` for companies,
-and for contacts an email or a name-plus-company key. Applying the same input twice must
-leave the record in the same state and report `unchanged` the second time. This matters
-because agents retry: a network hiccup on the response path must not create a duplicate.
+Both CRM writes are upserts keyed by natural identifiers:
+* **Companies**: Keyed by `Company.domain` (normalized, lowercased web domain).
+* **Contacts**: Keyed by natural identity (DECISIONS.md D-014):
+  1. Normalized email is the primary natural identity when present.
+  2. External provider identity (`provider_name`, `provider_contact_id`) provides identity when email is unavailable.
+  3. If neither exists, the system **does not falsely claim idempotent identity** (no coalescing on `name + company`).
+* **List memberships**: Keyed by `(list_id, contact_id)` with a database unique constraint.
 
-Merge rule: an enriched value never overwrites a populated CRM field with `null`. Provenance
-travels with the data (`RecordSource`) so the merge policy has something to reason about
-rather than guessing which side is fresher.
+Applying the same input twice leaves the record in the same state and reports `unchanged` the second time. This matters because agents retry: a network hiccup on the response path must not create a duplicate.
+
+## Merge and Conflict Policy
+
+Adopted principle (DECISIONS.md D-015):
+> **CRM-curated values are authoritative over enrichment values.**
+
+1. Enrichment may populate missing values (`None` / `NULL`) or update explicitly enrichment-owned fields, but must not silently overwrite manually curated CRM data.
+2. An incoming write never overwrites a populated CRM field with `null`.
+3. Provenance travels with the data (`RecordSource`) so the merge policy reasons about origin rather than guessing freshness.
 
 ## Designing tools for a model, not a developer
 
