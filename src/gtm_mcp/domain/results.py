@@ -48,9 +48,16 @@ class WriteResult(BaseModel):
 
     Returned by every write tool. The shape is uniform so that an agent can
     branch on ``outcome`` without knowing which tool it called.
+
+    ``json_schema_mode_override`` makes the derived tool output schema include
+    the computed ``success`` field; without it the SDK would validate a
+    serialised result carrying ``success`` against a schema that forbids it
+    (D-018).
     """
 
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(
+        extra="forbid", frozen=True, json_schema_mode_override="serialization"
+    )
 
     outcome: WriteOutcome = Field(description="What happened to persistent state.")
     record_id: str | None = Field(

@@ -103,17 +103,27 @@ async def test_server_info_reports_the_database_as_unavailable_in_tests(client: 
 
 
 async def test_planned_capabilities_are_declared_but_not_callable(client: Client) -> None:
-    """Honest self-report: the five GTM tools are designed, not yet implemented."""
+    """Honest self-report: what is listed as planned must not be registered."""
     result = await client.call_tool("server_info", {})
     assert result.structured_content is not None
     planned = set(result.structured_content["planned_capabilities"])
-    assert planned == {
-        "search_company",
-        "search_contact",
-        "crm_query",
-        "save_to_list",
-        "sync_to_crm",
-    }
+    assert planned == {"crm_query", "save_to_list", "sync_to_crm"}
 
     registered = {tool.name for tool in (await client.list_tools()).tools}
     assert planned.isdisjoint(registered)
+
+
+async def test_implemented_capabilities_are_all_actually_registered(client: Client) -> None:
+    """Nothing is announced as implemented that cannot actually be called.
+
+    The other half of the honesty claim, and it also catches a capability listed
+    as both implemented and planned.
+    """
+    result = await client.call_tool("server_info", {})
+    assert result.structured_content is not None
+    implemented = set(result.structured_content["implemented_capabilities"])
+    planned = set(result.structured_content["planned_capabilities"])
+    registered = {tool.name for tool in (await client.list_tools()).tools}
+
+    assert implemented == registered
+    assert implemented.isdisjoint(planned)

@@ -14,11 +14,30 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 
+import httpx2
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from gtm_mcp.audit.sinks import AuditSink
 from gtm_mcp.errors import RepositoryError
+from gtm_mcp.providers.sample import SampleCompanyProvider, SampleContactProvider
+from gtm_mcp.services.enrichment import EnrichmentService
 from gtm_mcp.settings import Settings
+
+
+def _default_enrichment_service() -> EnrichmentService:
+    """Build the offline enrichment service used when no lifespan configured one.
+
+    Keeps ``AppContext`` constructible in a test without reaching for a network
+    client, while making the credential-free offline dataset the explicit
+    default rather than ``None`` that every call site must then guard.
+
+    Returns:
+        An enrichment service backed by the offline sample adapters.
+    """
+    return EnrichmentService(
+        company_provider=SampleCompanyProvider(),
+        contact_provider=SampleContactProvider(),
+    )
 
 
 @dataclass(slots=True)
@@ -31,6 +50,8 @@ class AppContext:
 
     settings: Settings
     audit_sink: AuditSink
+    enrichment: EnrichmentService = field(default_factory=_default_enrichment_service)
+    http_client: httpx2.AsyncClient | None = None
     engine: AsyncEngine | None = None
     session_factory: async_sessionmaker[AsyncSession] | None = None
     database_available: bool = False

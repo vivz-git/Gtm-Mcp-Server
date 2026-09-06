@@ -62,6 +62,10 @@ class Company(GTMRecord):
     employee_count: int | None = Field(
         default=None, ge=0, description="Approximate headcount, if reported."
     )
+    city: str | None = Field(default=None, description="City of the headquarters, if reported.")
+    state: str | None = Field(
+        default=None, description="State, province or region of the headquarters, if reported."
+    )
     country: str | None = Field(default=None, description="ISO 3166-1 alpha-2 country code.")
     website: str | None = Field(default=None, description="Canonical website URL.")
     linkedin_url: str | None = Field(default=None, description="LinkedIn company page URL.")
@@ -79,6 +83,13 @@ class Contact(GTMRecord):
     )
     company_name: str | None = Field(default=None, description="Employer name as reported.")
     email: str | None = Field(default=None, description="Work email address, if available.")
+    phone: str | None = Field(
+        default=None, description="Direct or work phone number, if available."
+    )
+    city: str | None = Field(default=None, description="City the person is based in, if reported.")
+    country: str | None = Field(
+        default=None, description="ISO 3166-1 alpha-2 country code of the person's location."
+    )
     linkedin_url: str | None = Field(default=None, description="LinkedIn profile URL.")
 
 

@@ -18,31 +18,56 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
-from gtm_mcp.domain.models import Company, Contact, ContactFilter
+from gtm_mcp.domain.enrichment import CompanyEnrichment, ContactEnrichment
+from gtm_mcp.domain.identifiers import CompanyQuery, ContactQuery
+from gtm_mcp.domain.models import Contact, ContactFilter
 from gtm_mcp.domain.results import WriteResult
 
 
 @runtime_checkable
 class CompanyEnrichmentProvider(Protocol):
-    """An external source of firmographic data."""
+    """An external source of firmographic data.
+
+    Implementations are the only place that may know a vendor's field names,
+    parameter names or error codes. Everything above this seam sees canonical
+    records and ``GTMError`` subclasses.
+    """
 
     @property
     def name(self) -> str:
         """Stable provider identifier, recorded on every enriched record."""
         ...
 
-    async def enrich_company(self, domain_or_name: str) -> Company | None:
+    @property
+    def live(self) -> bool:
+        """Whether this adapter calls a real external API.
+
+        ``False`` for the offline sample adapter. Surfaced to the agent through
+        ``EnrichmentProvenance.live`` so demonstration data is never mistaken
+        for real-world data.
+        """
+        ...
+
+    async def enrich_company(self, query: CompanyQuery) -> CompanyEnrichment | None:
         """Look up firmographic data for a company.
 
+        Exactly one outbound request per call. Implementations must not fall
+        back to another vendor, and must not retry a call the provider rejected
+        on validation or authentication grounds, because both multiply cost.
+
         Args:
-            domain_or_name: A web domain or company name to resolve.
+            query: The normalised company identifier.
 
         Returns:
-            The enriched company, or ``None`` if the provider has no match.
+            The enriched company with its provenance, or ``None`` if the
+            provider has no match for an input it was able to resolve.
 
         Raises:
-            ProviderError: The provider was reachable but failed.
-            RateLimitError: The provider's quota is exhausted.
+            ValidationError: The query lacks an identifier this provider can
+                resolve — distinct from "no match", and actionable by the agent.
+            RateLimitError: The provider's quota or rate limit is exhausted.
+            ProviderError: The provider failed or returned an unusable response.
+            ConfigurationError: The provider rejected this server's credential.
         """
         ...
 
@@ -56,19 +81,30 @@ class ContactEnrichmentProvider(Protocol):
         """Stable provider identifier, recorded on every enriched record."""
         ...
 
-    async def enrich_contact(self, full_name: str, company: str) -> Contact | None:
+    @property
+    def live(self) -> bool:
+        """Whether this adapter calls a real external API."""
+        ...
+
+    async def enrich_contact(self, query: ContactQuery) -> ContactEnrichment | None:
         """Look up a person at a company.
 
+        The same single-request, no-fallback, no-retry-on-4xx rules as
+        :meth:`CompanyEnrichmentProvider.enrich_company` apply.
+
         Args:
-            full_name: The person's name.
-            company: Employer name or web domain.
+            query: The normalised person and employer identifiers.
 
         Returns:
-            The enriched contact, or ``None`` if the provider has no match.
+            The enriched contact with its provenance, or ``None`` if the
+            provider has no match.
 
         Raises:
-            ProviderError: The provider was reachable but failed.
-            RateLimitError: The provider's quota is exhausted.
+            ValidationError: The query lacks an identifier this provider can
+                resolve.
+            RateLimitError: The provider's quota or rate limit is exhausted.
+            ProviderError: The provider failed or returned an unusable response.
+            ConfigurationError: The provider rejected this server's credential.
         """
         ...
 

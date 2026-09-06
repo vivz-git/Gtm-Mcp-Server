@@ -17,6 +17,7 @@ Environment = Literal["local", "test", "production"]
 LogFormat = Literal["console", "json"]
 LogLevel = Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 Transport = Literal["stdio", "streamable-http"]
+EnrichmentProvider = Literal["sample", "hunter"]
 
 
 class Settings(BaseSettings):
@@ -94,18 +95,41 @@ class Settings(BaseSettings):
     )
 
     # --- External enrichment ------------------------------------------------
-    # Provider selection is deliberately deferred (see DECISIONS.md D-007).
-    # The key is optional so the server starts and serves read-only CRM tools
-    # without any third-party credential present.
+    # Provider selection (DECISIONS.md D-017). The default needs no credential:
+    # 'sample' serves this repository's offline dataset so the server is
+    # runnable and demonstrable on a fresh clone. 'hunter' is the live provider
+    # and requires enrichment_api_key; selecting it without one fails at
+    # startup rather than silently serving sample data.
+    enrichment_provider: EnrichmentProvider = Field(
+        default="sample",
+        description="Which enrichment adapter to run: 'sample' (offline dataset, no "
+        "credential) or 'hunter' (live API, requires enrichment_api_key).",
+    )
     enrichment_api_key: SecretStr | None = Field(
         default=None,
-        description="Credential for the external enrichment provider, once chosen.",
+        description="Credential for the live enrichment provider. Sent as a request "
+        "header, never as a query parameter.",
     )
     enrichment_timeout_seconds: float = Field(
-        default=10.0,
+        default=15.0,
         gt=0,
         le=120,
-        description="Per-request timeout for outbound enrichment calls.",
+        description="Per-request timeout for outbound enrichment calls. Kept above the "
+        "provider's own search duration so a billed call is not abandoned mid-flight.",
+    )
+    enrichment_max_retries: int = Field(
+        default=2,
+        ge=0,
+        le=5,
+        description="Additional attempts after a transient failure (timeout or 5xx). "
+        "Rejections and rate limits are never retried, so this cannot multiply credit "
+        "spend. 0 disables retrying.",
+    )
+    enrichment_retry_backoff_seconds: float = Field(
+        default=0.5,
+        gt=0,
+        le=30,
+        description="Base delay between retries; attempt n waits backoff * 2^(n-1).",
     )
 
     @property

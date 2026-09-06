@@ -250,3 +250,41 @@ async def test_query_contacts_with_filters(crm_repo: PostgresCrmRepository) -> N
     list_matches = await crm_repo.query_contacts(ContactFilter(list_name=list_name))
     assert len(list_matches) >= 1
     assert any(c.full_name == "Engineer One" for c in list_matches)
+
+
+async def test_enrichment_location_fields_survive_a_round_trip(
+    crm_repo: PostgresCrmRepository,
+) -> None:
+    """Phone, city and country reach the database and come back.
+
+    These columns existed before the canonical model carried them, so an
+    enriched contact would have had its phone number silently dropped on the way
+    in — a data loss no test would have caught.
+    """
+    unique_email = f"ada.lovelace.{uuid.uuid4().hex[:6]}@analytical.engine"
+    enriched = Contact(
+        full_name="Ada Lovelace",
+        first_name="Ada",
+        last_name="Lovelace",
+        title="Chief Mathematician",
+        email=unique_email,
+        phone="+44-20-7946-0000",
+        city="London",
+        country="GB",
+        company_domain="analytical.engine",
+        company_name="Analytical Engine Ltd",
+        source=RecordSource.ENRICHMENT,
+    )
+
+    created = await crm_repo.upsert_contact(enriched)
+    assert created.outcome is WriteOutcome.CREATED
+    assert created.record_id is not None
+
+    stored = await crm_repo.get_contact(created.record_id)
+    assert stored is not None
+    assert stored.phone == "+44-20-7946-0000"
+    assert stored.city == "London"
+    assert stored.country == "GB"
+
+    unchanged = await crm_repo.upsert_contact(enriched)
+    assert unchanged.outcome is WriteOutcome.UNCHANGED, "the new fields must not break idempotency"

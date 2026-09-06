@@ -228,7 +228,7 @@ benefit; `httpx2` is API-compatible.
 
 ## D-013 — Enrichment provider selection deferred
 
-**Date:** 2026-09-06 · **Status:** Deferred
+**Date:** 2026-09-06 · **Status:** Superseded by D-017
 
 **Decision.** No enrichment vendor is chosen yet. `CompanyEnrichmentProvider` and
 `ContactEnrichmentProvider` define the boundary; selection happens after a survey of current
@@ -310,3 +310,127 @@ or future code bugs cannot delete records or duplicate list memberships.
 
 **Consequences.** Covered by `tests/integration/test_schema_and_migrations.py`.
 
+---
+
+## D-017 — External enrichment provider strategy: Hunter live, offline sample by default
+
+**Date:** 2026-09-06 · **Status:** Accepted · **Supersedes:** D-013 (Deferred)
+
+**Context.** Phase 3 needs a company enrichment source and a contact enrichment source. The
+constraint that decided it is not data quality but *reproducibility*: this is a public
+portfolio repository, so a reviewer must be able to clone it and exercise both search tools.
+A provider whose API is gated behind a sales conversation makes the tools unrunnable for
+everyone but the author, and no amount of clean architecture compensates for that.
+
+Evaluated against current official documentation on 2026-09-06.
+
+| Provider | API on free tier | Auth | Company lookup | Contact lookup | Cost per call |
+| --- | --- | --- | --- | --- | --- |
+| **Hunter** | **Yes** — 50 credits/month, API listed in the free plan | `X-API-KEY` header | `GET /v2/companies/find` (domain) | `GET /v2/email-finder` (name + domain *or* company name) | 0.2 credits company, 1 credit email |
+| Apollo | No | `x-api-key` header | `GET /api/v1/organizations/enrich` | `POST /api/v1/people/match` | 1 credit org; 1–9 per person |
+| Prospeo | Not documented | `X-KEY` header | `POST /enrich-company` | `POST /enrich-person` | 1 credit matched; 10 with mobile |
+| People Data Labs | Yes, 100/month | API key | Company Enrichment | Person Enrichment | 1 credit per successful match |
+
+**Decision.**
+
+1. **Live company provider: Hunter Company Enrichment** (`GET /v2/companies/find`).
+2. **Live contact provider: Hunter Email Finder** (`GET /v2/email-finder`).
+3. **Default provider: an offline sample dataset shipped in this repository**
+   (`GTM_ENRICHMENT_PROVIDER=sample`), with Hunter opt-in via
+   `GTM_ENRICHMENT_PROVIDER=hunter` plus `GTM_ENRICHMENT_API_KEY`.
+
+**Why Hunter.**
+
+* Its API is available on the free plan — the only evaluated vendor for which this is
+  documented plainly rather than inferred. Apollo's own pricing page states API access is
+  offered "on our Custom plans"; its documentation says access "depends on your Apollo plan"
+  and that a free account additionally requires registration with a work email address. That
+  rules Apollo out as the demonstrable path, whatever the merits of its data.
+* Hunter's contact endpoint matches the shape of `search_contact(name, company)` exactly: it
+  accepts a person's name plus **either** an employer domain **or** an employer name.
+  Hunter's other people endpoint (`/v2/people/find`) requires an email address or a LinkedIn
+  handle, which an agent asked to "find Elena at CloudScale" does not have. Apollo's People
+  Enrichment takes the same name-and-company inputs but costs 1–9 credits, with the range
+  driven by what it happens to find — hard to reason about on a fixed monthly budget.
+* Status semantics are documented and unambiguous, which is what makes honest error mapping
+  possible: 400 invalid parameters, 401 bad key, 403 rate limit, 404 no record, 429 monthly
+  quota, 451 legal block. Note that 403 and 429 are the reverse of the common convention;
+  that inversion lives in the adapter and nowhere else.
+* Authentication works as a header (`X-API-KEY`), not only as an `api_key` query parameter,
+  so the credential never appears in a URL, a log line or a proxy access log.
+* A documented **`test-api-key`** returns a fixed dummy response on Email Finder without
+  consuming credits, which allowed the adapter to be validated against the real endpoint
+  once, at zero cost. Doing so found a genuine bug: the endpoint can return a *different*
+  person from the one asked about, and the adapter was composing a record whose `full_name`
+  came from the query while its `first_name` and `last_name` came from the response. The
+  record now reports whoever the provider actually returned.
+
+**Why an offline dataset is the default.**
+
+A vendor credential cannot be committed, so a repository whose only provider is live is a
+repository whose headline feature nobody else can run. The sample adapter is a real
+implementation of the same port: it makes both tools work on a fresh clone, keeps the
+protocol tests deterministic and network-free, and — because there are now two adapters
+behind each port — demonstrates that the boundary holds rather than merely asserting it.
+
+The honesty cost of shipping synthetic data is paid explicitly. Every result carries
+`provenance.live`, false for this adapter; the result message states that the data is
+synthetic and must not be presented as fact; `server_info` reports the configured provider
+and whether enrichment is live; and selecting a live provider *without* a credential fails at
+startup rather than silently falling back to sample data under a real provider's name.
+
+**Rejected alternatives.**
+
+* **Apollo** — the richest firmographics of the four, but API access is not on the free plan
+  and a free account needs a work-email registration. Unrunnable for a reviewer.
+* **Prospeo** — a well-designed API (clear `NO_MATCH`, `INSUFFICIENT_CREDITS` and
+  `INVALID_API_KEY` codes; no charge for a miss or for a repeat lookup within 90 days) and
+  the strongest second choice. Rejected only because its published rate-limit tiers are
+  Starter, Growth and Pro with no documented free tier, so free-tier behaviour could not be
+  confirmed from official documentation. Its endpoints were revamped with the old ones
+  retired on 2026-03-01 — a reminder of why vendor behaviour is pinned behind an adapter.
+* **People Data Labs** — a real free tier, but on it contact fields are returned as
+  true/false availability flags rather than values, which makes it useless for the one thing
+  `search_contact` exists to do.
+* **Clearbit** — no longer a self-serve API; absorbed into HubSpot Breeze Intelligence.
+
+**Consequences.**
+
+* Hunter resolves companies by **domain only**. A name-only company query is refused by the
+  adapter with an actionable `ValidationError` rather than turned into a guessed
+  `{name}.com`, which would return confident data about a different company. The sample
+  adapter *can* resolve names, so the capability difference is visible at the port, handled
+  in the adapters, and absent from the service and tool layers.
+* Hunter's company payload carries no website URL, so `Company.website` is left unset by that
+  adapter. No field is synthesised to fill a gap the provider did not fill.
+* Free-tier arithmetic is worth stating plainly: 50 credits per month is roughly 50
+  `search_contact` calls (1 credit each) or 250 `search_company` calls (0.2 each). That is a
+  demonstration budget, not a production one.
+
+---
+
+## D-018 — Computed fields require a serialisation-mode output schema
+
+**Date:** 2026-09-06 · **Status:** Accepted
+
+**Context.** Found while wiring `search_company`, not by reading documentation. The SDK
+derives a tool's output schema from its return model *and then validates the serialised
+result against that schema*. Pydantic puts computed fields in the **serialisation** schema
+only, while `extra="forbid"` emits `additionalProperties: false` into both. The server
+therefore emitted `found` and immediately rejected its own response:
+`Additional properties are not allowed ('found' was unexpected)`.
+
+**Decision.** Any model returned from a tool that carries a `@computed_field` sets
+`json_schema_mode_override="serialization"` in its `model_config`. Applied to
+`CompanyLookup`, `ContactLookup` and — pre-emptively, since it is the same pattern and its
+tools land in Phase 4 — `WriteResult`.
+
+**Why.** The alternatives are worse. Dropping `extra="forbid"` would remove
+`additionalProperties: false` and hide the mismatch rather than fix it, leaving the model
+reading a schema that does not mention a field it will receive. Turning `found` into a
+stored field would abandon the structural guarantee that a result cannot claim a match it
+does not carry (D-009).
+
+**Consequences.** Covered by `test_output_schemas_are_derived_and_advertise_the_found_flag`.
+A future tool returning a model with a computed field and no override fails loudly at call
+time rather than silently.

@@ -39,6 +39,17 @@ class ServerInfo(BaseModel):
     dry_run_writes: bool = Field(
         description="When true, write tools validate and audit but never persist changes."
     )
+    company_enrichment_provider: str = Field(
+        description="Identifier of the provider backing search_company."
+    )
+    contact_enrichment_provider: str = Field(
+        description="Identifier of the provider backing search_contact."
+    )
+    enrichment_is_live: bool = Field(
+        description="True when enrichment calls a real external API. False means the "
+        "search tools return this server's offline synthetic dataset, which must not be "
+        "presented to a user as real-world data."
+    )
     implemented_capabilities: tuple[str, ...] = Field(
         description="GTM capabilities that are implemented and callable right now."
     )
@@ -51,10 +62,8 @@ class ServerInfo(BaseModel):
 # Capability lists are declared here, next to the tool that reports them, so
 # that enabling a tool and announcing it are a single edit. Each entry moves
 # from planned to implemented as its tool is registered.
-_IMPLEMENTED: tuple[str, ...] = ("server_info",)
+_IMPLEMENTED: tuple[str, ...] = ("server_info", "search_company", "search_contact")
 _PLANNED: tuple[str, ...] = (
-    "search_company",
-    "search_contact",
     "crm_query",
     "save_to_list",
     "sync_to_crm",
@@ -99,6 +108,9 @@ def register_diagnostics_tools(mcp: MCPServer[AppContext]) -> None:
             database_available=app.database_available,
             write_tools_enabled=settings.enable_write_tools,
             dry_run_writes=settings.dry_run_writes,
+            company_enrichment_provider=app.enrichment.company_provider_name,
+            contact_enrichment_provider=app.enrichment.contact_provider_name,
+            enrichment_is_live=app.enrichment.live,
             implemented_capabilities=_IMPLEMENTED,
             planned_capabilities=_PLANNED,
         )

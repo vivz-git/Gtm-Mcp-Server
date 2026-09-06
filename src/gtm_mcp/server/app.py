@@ -25,6 +25,14 @@ back to it.
 Choosing a tool:
 - To learn about a company, start from its web domain when you have one; domains
   are the join key across every tool here.
+- `search_company` and `search_contact` reach an external enrichment provider.
+  They are read-only, but each call may consume a paid provider credit, so treat
+  a `found: false` result as a definitive answer rather than retrying variations
+  of the same identifier.
+- Enrichment results carry a `provenance` block. When `provenance.live` is false
+  the values come from this server's offline synthetic dataset: use them to
+  demonstrate a workflow, never present them to the user as real-world facts.
+  `server_info` reports which provider is configured.
 - Read tools never modify data and are safe to call speculatively.
 - Write tools modify CRM state. Call them only when the user has asked for a
   change, and use the enriched record you just retrieved rather than values you

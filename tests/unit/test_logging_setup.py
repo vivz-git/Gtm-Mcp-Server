@@ -54,3 +54,20 @@ def test_sensitive_fields_are_redacted(capsys: pytest.CaptureFixture[str]) -> No
     assert err.count(REDACTION_PLACEHOLDER) == 2
     # Non-sensitive context must survive, or the logs stop being useful.
     assert "example.com" in err
+
+
+@pytest.mark.unit
+def test_the_enrichment_auth_header_name_is_redacted(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """No code logs a header today; this keeps a future debug line from leaking one."""
+    configure_logging(level="INFO", log_format="json")
+    get_logger("test").warning(
+        "provider_request_failed",
+        **{"x-api-key": "a-real-looking-key", "provider": "hunter"},
+    )
+
+    err = capsys.readouterr().err
+    assert "a-real-looking-key" not in err
+    assert REDACTION_PLACEHOLDER in err
+    assert "hunter" in err, "non-sensitive context survives redaction"

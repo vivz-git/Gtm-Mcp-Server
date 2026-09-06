@@ -19,6 +19,8 @@ from gtm_mcp.context import AppContext
 from gtm_mcp.db.engine import build_engine, build_session_factory, check_connection
 from gtm_mcp.errors import RepositoryError
 from gtm_mcp.logging_setup import configure_logging, get_logger
+from gtm_mcp.providers import build_enrichment_providers, build_http_client
+from gtm_mcp.services.enrichment import EnrichmentService
 from gtm_mcp.settings import Settings
 
 if TYPE_CHECKING:
@@ -54,18 +56,50 @@ def make_lifespan(
         happens to be down. The probe result is recorded on the context so that
         ``server_info`` can report it and CRM tools can fail with a clear message.
 
+        Enrichment configuration is treated differently, and fails fast: an
+        unreachable database is an environmental condition, whereas selecting a
+        live provider without a credential is an operator mistake whose only
+        graceful degradation would be to serve sample data under a real
+        provider's name.
+
         Args:
             _server: The server being started. Unused; required by the SDK signature.
 
         Yields:
             The application context shared by every handler.
+
+        Raises:
+            ConfigurationError: A live enrichment provider is selected without
+                a credential.
         """
         # Configured here, not only in __main__, so that every entry point -
         # console script, python -m, an embedding test - gets stderr-only logging
         # before the first byte of JSON-RPC is written to stdout.
         configure_logging(level=settings.log_level, log_format=settings.log_format)
 
-        context = AppContext(settings=settings, audit_sink=LoggingAuditSink())
+        # The HTTP client is created only for a live provider: the offline
+        # adapter performs no network I/O, and an unused pooled client is a
+        # resource and a footgun (an accidental outbound call in a test) that
+        # the default configuration should not carry.
+        http_client = (
+            build_http_client(settings) if settings.enrichment_provider != "sample" else None
+        )
+        try:
+            providers = build_enrichment_providers(settings, http_client)
+        except Exception:
+            if http_client is not None:
+                await http_client.aclose()
+            raise
+
+        context = AppContext(
+            settings=settings,
+            audit_sink=LoggingAuditSink(),
+            enrichment=EnrichmentService(
+                company_provider=providers.company,
+                contact_provider=providers.contact,
+            ),
+            http_client=http_client,
+        )
 
         engine = build_engine(settings)
         try:
@@ -87,6 +121,8 @@ def make_lifespan(
             transport=settings.transport,
             database_available=context.database_available,
             write_tools_enabled=settings.enable_write_tools,
+            enrichment_provider=settings.enrichment_provider,
+            enrichment_live=context.enrichment.live,
         )
 
         try:
@@ -94,6 +130,8 @@ def make_lifespan(
         finally:
             if context.engine is not None:
                 await context.engine.dispose()
+            if context.http_client is not None:
+                await context.http_client.aclose()
             _log.info("server_stopped")
 
     return _lifespan

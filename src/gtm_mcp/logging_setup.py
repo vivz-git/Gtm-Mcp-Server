@@ -24,6 +24,10 @@ REDACTED_KEYS: frozenset[str] = frozenset(
         "api_key",
         "authorization",
         "database_url",
+        # The header name the enrichment adapters authenticate with. Nothing
+        # logs a header today; this is here so that a future debug line cannot
+        # quietly become the leak.
+        "x-api-key",
         "email",
         "enrichment_api_key",
         "password",

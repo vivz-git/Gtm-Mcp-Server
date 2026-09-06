@@ -62,6 +62,28 @@ Non-negotiable, and enforced by tests:
 - Annotate write tools `read_only_hint=False`, `destructive_hint=False`,
   `idempotent_hint=True`.
 
+## Enrichment provider rules
+
+External providers are metered, so cost is a correctness property, not an optimisation.
+
+- **One tool call, at most one provider request.** No pre-flight lookup, no retry under a
+  different identifier, no automatic fallback to a second vendor.
+- **Retry only 5xx and transport failures**, bounded by `enrichment_max_retries`. Never retry
+  a 429, a rejected credential or a validation error: it fixes nothing and can cost a credit.
+- **Vendor specifics stay in the adapter.** No provider name, parameter name, status-code
+  meaning or `if provider ==` above `gtm_mcp/providers/`.
+- **Never synthesise a field the provider did not return** (no `https://{domain}` website, no
+  invented confidence), and never guess a domain from a company name.
+- **Validate every payload into a model before reading it.** Provider responses are untrusted
+  input; a shape change must produce a `ProviderError`, not a half-translated record.
+- **Bound anything echoed back to the model.** Provider error text is truncated before it
+  reaches a tool result.
+- **Credentials go in a header, never a query parameter**, and never into a log.
+- **Tests never call a provider.** Adapters are tested against a scripted transport that
+  records outbound calls, so an extra request fails the suite instead of costing money.
+- **Sample data must announce itself.** Anything not from a live API sets
+  `provenance.live = False`, and `server_info` reports the configured provider.
+
 ## Writing tools for a model
 
 The reader of a tool definition is an LLM choosing among several tools.
@@ -71,6 +93,9 @@ The reader of a tool definition is an LLM choosing among several tools.
 - Every parameter gets `Field(description=...)` and real constraints (`ge`, `le`,
   `Literal`).
 - Schemas come from type hints. **Do not hand-write JSON Schema** (D-006).
+- A return model with a `@computed_field` must set
+  `json_schema_mode_override="serialization"`, or the SDK validates the response against a
+  schema that forbids the field it just emitted (D-018).
 - Every tool gets `ToolAnnotations`. A missing annotation fails the contract test.
 - Error messages are read by the model: say what was wrong and what to try instead.
 
