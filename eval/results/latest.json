@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-06T17:07:45.448246+00:00",
+  "timestamp": "2026-09-07T04:22:43.086148+00:00",
   "mode": "deterministic",
   "total_scenarios": 28,
   "passed_scenarios": 28,
@@ -142,11 +142,11 @@
               "limit_reached": false
             },
             "is_error": false,
-            "duration_ms": 130.11
+            "duration_ms": 204.67
           }
         ],
         "final_response": "Found Elena Rostova (elena.rostova@cloudscale.io), VP of Engineering at CloudScale Systems (cloudscale.io) in our CRM.",
-        "execution_time_ms": 130.11,
+        "execution_time_ms": 204.67,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [],
@@ -193,7 +193,7 @@
               "limit_reached": false
             },
             "is_error": false,
-            "duration_ms": 33.2
+            "duration_ms": 98.03
           },
           {
             "tool_name": "search_contact",
@@ -215,7 +215,7 @@
               "contact": {
                 "source": "enrichment",
                 "confidence": 0.79,
-                "retrieved_at": "2026-09-06T17:07:42.191475Z",
+                "retrieved_at": "2026-09-07T04:22:38.828574Z",
                 "full_name": "Aoife Brennan",
                 "first_name": "Aoife",
                 "last_name": "Brennan",
@@ -232,18 +232,18 @@
                 "provider": "sample",
                 "live": false,
                 "matched_on": "person_name",
-                "retrieved_at": "2026-09-06T17:07:42.191475Z",
+                "retrieved_at": "2026-09-07T04:22:38.828574Z",
                 "provider_record_id": "a***@verdantgrid.co.uk"
               },
               "message": "Matched contact 'Aoife Brennan' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
               "found": true
             },
             "is_error": false,
-            "duration_ms": 34.3
+            "duration_ms": 88.59
           }
         ],
         "final_response": "No contact found in CRM for verdantgrid.co.uk. Enriched Aoife Brennan (Head of Commercial Strategy, verdantgrid.co.uk).",
-        "execution_time_ms": 67.5,
+        "execution_time_ms": 186.62,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -310,11 +310,11 @@
               "limit_reached": false
             },
             "is_error": false,
-            "duration_ms": 31.33
+            "duration_ms": 64.52
           }
         ],
         "final_response": "Found Liam O'Connor (CISO) at Apex FinTech Labs in our CRM.",
-        "execution_time_ms": 31.33,
+        "execution_time_ms": 64.52,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [],
@@ -356,7 +356,7 @@
               "company": {
                 "source": "enrichment",
                 "confidence": 1.0,
-                "retrieved_at": "2026-09-06T17:07:42.344164Z",
+                "retrieved_at": "2026-09-07T04:22:39.143198Z",
                 "domain": "northwindlogistics.com",
                 "name": "Northwind Logistics",
                 "description": "Freight visibility and multi-carrier shipment orchestration.",
@@ -372,18 +372,18 @@
                 "provider": "sample",
                 "live": false,
                 "matched_on": "domain",
-                "retrieved_at": "2026-09-06T17:07:42.344164Z",
+                "retrieved_at": "2026-09-07T04:22:39.143198Z",
                 "provider_record_id": "northwindlogistics.com"
               },
               "message": "Matched company 'Northwind Logistics' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
               "found": true
             },
             "is_error": false,
-            "duration_ms": 33.83
+            "duration_ms": 75.08
           }
         ],
         "final_response": "Northwind Logistics: Logistics & Supply Chain, 1200 employees, Chicago, IL.",
-        "execution_time_ms": 33.83,
+        "execution_time_ms": 75.08,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -433,7 +433,7 @@
               "contact": {
                 "source": "enrichment",
                 "confidence": 0.91,
-                "retrieved_at": "2026-09-06T17:07:42.423747Z",
+                "retrieved_at": "2026-09-07T04:22:39.300465Z",
                 "full_name": "Dana Whitfield",
                 "first_name": "Dana",
                 "last_name": "Whitfield",
@@ -450,18 +450,18 @@
                 "provider": "sample",
                 "live": false,
                 "matched_on": "person_name",
-                "retrieved_at": "2026-09-06T17:07:42.423747Z",
+                "retrieved_at": "2026-09-07T04:22:39.300465Z",
                 "provider_record_id": "d***@northwindlogistics.com"
               },
               "message": "Matched contact 'Dana Whitfield' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
               "found": true
             },
             "is_error": false,
-            "duration_ms": 53.08
+            "duration_ms": 64.95
           }
         ],
         "final_response": "Found Dana Whitfield, VP of Sales at Northwind Logistics (dana.whitfield@northwindlogistics.com).",
-        "execution_time_ms": 53.08,
+        "execution_time_ms": 64.95,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -508,11 +508,11 @@
               "found": false
             },
             "is_error": false,
-            "duration_ms": 53.28
+            "duration_ms": 58.67
           }
         ],
         "final_response": "Could not find any company matching nonexistent-domain-xyz999.io. The domain is not found in provider records.",
-        "execution_time_ms": 53.28,
+        "execution_time_ms": 58.67,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -594,11 +594,11 @@
               "limit_reached": false
             },
             "is_error": false,
-            "duration_ms": 48.32
+            "duration_ms": 75.04
           }
         ],
         "final_response": "Found Security leaders in CRM: Liam O'Connor and Rachel Adams.",
-        "execution_time_ms": 48.32,
+        "execution_time_ms": 75.04,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [],
@@ -678,11 +678,11 @@
               "limit_reached": false
             },
             "is_error": false,
-            "duration_ms": 59.31
+            "duration_ms": 59.17
           }
         ],
         "final_response": "Found contacts at cloudscale.io: Elena Rostova and Marcus Chen.",
-        "execution_time_ms": 59.31,
+        "execution_time_ms": 59.17,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [],
@@ -746,11 +746,11 @@
               "limit_reached": false
             },
             "is_error": false,
-            "duration_ms": 83.52
+            "duration_ms": 57.1
           }
         ],
         "final_response": "Found contact Elena Rostova in 'Tier-1 Infrastructure'.",
-        "execution_time_ms": 83.52,
+        "execution_time_ms": 57.1,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [],
@@ -790,18 +790,18 @@
             },
             "result": {
               "outcome": "created",
-              "record_id": "60e1fe6e-0b51-4f91-85f0-dfddb18ed5ac",
+              "record_id": "47bfd31c-0dc0-417e-9c08-8be2efe129c2",
               "changed_fields": [],
-              "audit_id": "c8df913f-8ce7-4e7a-9194-7430f5a7b4a7",
+              "audit_id": "8a23d1cb-808f-42b6-8301-bb62186789b1",
               "message": "Created contact 'Dana Whitfield'",
               "success": true
             },
             "is_error": false,
-            "duration_ms": 172.99
+            "duration_ms": 132.19
           }
         ],
         "final_response": "Contact Dana Whitfield was created and synced to the CRM (added to crm).",
-        "execution_time_ms": 172.99,
+        "execution_time_ms": 132.19,
         "audit_events_count": 1,
         "mutations_count": 1,
         "recorded_outcomes": [
@@ -845,16 +845,16 @@
               "outcome": "unchanged",
               "record_id": "11111111-1111-1111-1111-111111111111",
               "changed_fields": [],
-              "audit_id": "3275a5a3-648c-4c8d-8942-7562ad4138aa",
+              "audit_id": "25e3a118-61cc-4a0e-87db-16dcf9674219",
               "message": "Contact 'Elena Rostova' is unchanged",
               "success": true
             },
             "is_error": false,
-            "duration_ms": 21.04
+            "duration_ms": 27.73
           }
         ],
         "final_response": "Contact is unchanged; the record is already up to date in the CRM.",
-        "execution_time_ms": 21.04,
+        "execution_time_ms": 27.73,
         "audit_events_count": 1,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -900,16 +900,16 @@
               "changed_fields": [
                 "title"
               ],
-              "audit_id": "b79c2031-8cc9-48cb-ab38-9d8477965980",
+              "audit_id": "8c441cfb-b00a-46e2-aa93-f2cd39ecf21c",
               "message": "Updated contact fields: title",
               "success": true
             },
             "is_error": false,
-            "duration_ms": 30.8
+            "duration_ms": 21.1
           }
         ],
         "final_response": "Updated Marcus Chen at cloudscale.io with new title 'VP of Architecture'.",
-        "execution_time_ms": 30.8,
+        "execution_time_ms": 21.1,
         "audit_events_count": 1,
         "mutations_count": 1,
         "recorded_outcomes": [
@@ -949,16 +949,16 @@
               "outcome": "created",
               "record_id": "11111111-1111-1111-1111-111111111111",
               "changed_fields": [],
-              "audit_id": "67c1a178-0594-4425-9d34-24c4f9ec0a6c",
+              "audit_id": "04b2a12c-9bd8-4037-bd49-43f29557d485",
               "message": "Added contact to list 'Q4 Enterprise Outreach'",
               "success": true
             },
             "is_error": false,
-            "duration_ms": 26.68
+            "duration_ms": 20.94
           }
         ],
         "final_response": "Contact was added to 'Q4 Enterprise Outreach'.",
-        "execution_time_ms": 26.68,
+        "execution_time_ms": 20.94,
         "audit_events_count": 1,
         "mutations_count": 1,
         "recorded_outcomes": [
@@ -998,16 +998,16 @@
               "outcome": "unchanged",
               "record_id": "11111111-1111-1111-1111-111111111111",
               "changed_fields": [],
-              "audit_id": "5ce86d6a-444f-4017-83c2-c9fe2789a495",
+              "audit_id": "6a8dc4fd-b796-4ee0-abdb-06f51555e9af",
               "message": "Contact already a member of list 'Tier-1 Infrastructure'",
               "success": true
             },
             "is_error": false,
-            "duration_ms": 29.39
+            "duration_ms": 21.92
           }
         ],
         "final_response": "Contact is already a member of list 'Tier-1 Infrastructure'.",
-        "execution_time_ms": 29.39,
+        "execution_time_ms": 21.92,
         "audit_events_count": 1,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1047,16 +1047,16 @@
               "outcome": "failed",
               "record_id": "99999999-9999-9999-9999-999999999999",
               "changed_fields": [],
-              "audit_id": "fe6db572-c27b-4cb9-97af-711eb9d777c7",
+              "audit_id": "882a4804-93ff-4461-a7b7-8bdea767c2c8",
               "message": "No CRM contact has identifier '99999999-9999-9999-9999-999999999999'. Nothing was added to any list. Find the contact with crm_query, or create it with sync_to_crm first, then retry with the identifier that call returned.",
               "success": false
             },
             "is_error": false,
-            "duration_ms": 23.81
+            "duration_ms": 30.22
           }
         ],
         "final_response": "Operation failed: Contact '99999999-9999-9999-9999-999999999999' was not found in the CRM, so could not add to list.",
-        "execution_time_ms": 23.81,
+        "execution_time_ms": 30.22,
         "audit_events_count": 1,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1106,7 +1106,7 @@
               "contact": {
                 "source": "enrichment",
                 "confidence": 0.91,
-                "retrieved_at": "2026-09-06T17:07:44.233482Z",
+                "retrieved_at": "2026-09-07T04:22:40.884447Z",
                 "full_name": "Dana Whitfield",
                 "first_name": "Dana",
                 "last_name": "Whitfield",
@@ -1123,14 +1123,14 @@
                 "provider": "sample",
                 "live": false,
                 "matched_on": "person_name",
-                "retrieved_at": "2026-09-06T17:07:44.233482Z",
+                "retrieved_at": "2026-09-07T04:22:40.884447Z",
                 "provider_record_id": "d***@northwindlogistics.com"
               },
               "message": "Matched contact 'Dana Whitfield' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
               "found": true
             },
             "is_error": false,
-            "duration_ms": 83.92
+            "duration_ms": 107.08
           },
           {
             "tool_name": "sync_to_crm",
@@ -1144,35 +1144,35 @@
             },
             "result": {
               "outcome": "created",
-              "record_id": "bd25f27d-f4a9-4364-ad70-835034a8ea8f",
+              "record_id": "1a8b17d2-f5ce-4e86-804e-a72cd31e13be",
               "changed_fields": [],
-              "audit_id": "0abbbf86-7493-4fce-aa1f-0bcb2c010c1c",
+              "audit_id": "9c63c234-dc0b-405e-8264-4acbf6bf9f7a",
               "message": "Created contact 'Dana Whitfield'",
               "success": true
             },
             "is_error": false,
-            "duration_ms": 17.65
+            "duration_ms": 19.9
           },
           {
             "tool_name": "save_to_list",
             "arguments": {
-              "contact_id": "bd25f27d-f4a9-4364-ad70-835034a8ea8f",
+              "contact_id": "1a8b17d2-f5ce-4e86-804e-a72cd31e13be",
               "list_name": "Target Accounts"
             },
             "result": {
               "outcome": "created",
-              "record_id": "bd25f27d-f4a9-4364-ad70-835034a8ea8f",
+              "record_id": "1a8b17d2-f5ce-4e86-804e-a72cd31e13be",
               "changed_fields": [],
-              "audit_id": "2e8deb6c-6ec6-4909-bf86-b3931b1c5988",
+              "audit_id": "d7f9ce9b-6258-4cd4-bbe2-756435112f94",
               "message": "Added contact to list 'Target Accounts'",
               "success": true
             },
             "is_error": false,
-            "duration_ms": 14.55
+            "duration_ms": 19.8
           }
         ],
         "final_response": "Researched Dana Whitfield at Northwind Logistics, synced her to CRM, and added her to Target Accounts.",
-        "execution_time_ms": 116.12,
+        "execution_time_ms": 146.78,
         "audit_events_count": 2,
         "mutations_count": 2,
         "recorded_outcomes": [
@@ -1223,7 +1223,7 @@
               "limit_reached": false
             },
             "is_error": false,
-            "duration_ms": 65.81
+            "duration_ms": 82.85
           },
           {
             "tool_name": "search_contact",
@@ -1245,7 +1245,7 @@
               "contact": {
                 "source": "enrichment",
                 "confidence": 0.79,
-                "retrieved_at": "2026-09-06T17:07:44.517142Z",
+                "retrieved_at": "2026-09-07T04:22:41.214809Z",
                 "full_name": "Aoife Brennan",
                 "first_name": "Aoife",
                 "last_name": "Brennan",
@@ -1262,14 +1262,14 @@
                 "provider": "sample",
                 "live": false,
                 "matched_on": "person_name",
-                "retrieved_at": "2026-09-06T17:07:44.517142Z",
+                "retrieved_at": "2026-09-07T04:22:41.214809Z",
                 "provider_record_id": "a***@verdantgrid.co.uk"
               },
               "message": "Matched contact 'Aoife Brennan' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
               "found": true
             },
             "is_error": false,
-            "duration_ms": 57.56
+            "duration_ms": 87.44
           },
           {
             "tool_name": "sync_to_crm",
@@ -1283,18 +1283,18 @@
             },
             "result": {
               "outcome": "created",
-              "record_id": "e518ba8d-6a65-4ebe-83b6-6538dd85bab3",
+              "record_id": "811ed144-c39a-436a-aa5d-fa4acc747a0e",
               "changed_fields": [],
-              "audit_id": "2fd0d08a-4507-4bed-8bcc-1d117638a0a9",
+              "audit_id": "80ba2191-1cb8-4816-9cb8-ba0769d84522",
               "message": "Created contact 'Aoife Brennan'",
               "success": true
             },
             "is_error": false,
-            "duration_ms": 18.37
+            "duration_ms": 14.79
           }
         ],
         "final_response": "Checked CRM, enriched Aoife Brennan at Verdant Grid, and synced her.",
-        "execution_time_ms": 141.74,
+        "execution_time_ms": 185.07999999999998,
         "audit_events_count": 1,
         "mutations_count": 1,
         "recorded_outcomes": [
@@ -1339,7 +1339,7 @@
               "company": {
                 "source": "enrichment",
                 "confidence": 1.0,
-                "retrieved_at": "2026-09-06T17:07:44.670034Z",
+                "retrieved_at": "2026-09-07T04:22:41.431340Z",
                 "domain": "northwindlogistics.com",
                 "name": "Northwind Logistics",
                 "description": "Freight visibility and multi-carrier shipment orchestration.",
@@ -1355,14 +1355,14 @@
                 "provider": "sample",
                 "live": false,
                 "matched_on": "domain",
-                "retrieved_at": "2026-09-06T17:07:44.670034Z",
+                "retrieved_at": "2026-09-07T04:22:41.431340Z",
                 "provider_record_id": "northwindlogistics.com"
               },
               "message": "Matched company 'Northwind Logistics' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
               "found": true
             },
             "is_error": false,
-            "duration_ms": 59.04
+            "duration_ms": 76.96
           },
           {
             "tool_name": "search_contact",
@@ -1384,7 +1384,7 @@
               "contact": {
                 "source": "enrichment",
                 "confidence": 0.91,
-                "retrieved_at": "2026-09-06T17:07:44.728553Z",
+                "retrieved_at": "2026-09-07T04:22:41.509327Z",
                 "full_name": "Dana Whitfield",
                 "first_name": "Dana",
                 "last_name": "Whitfield",
@@ -1401,18 +1401,18 @@
                 "provider": "sample",
                 "live": false,
                 "matched_on": "person_name",
-                "retrieved_at": "2026-09-06T17:07:44.728553Z",
+                "retrieved_at": "2026-09-07T04:22:41.509327Z",
                 "provider_record_id": "d***@northwindlogistics.com"
               },
               "message": "Matched contact 'Dana Whitfield' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
               "found": true
             },
             "is_error": false,
-            "duration_ms": 67.33
+            "duration_ms": 99.04
           }
         ],
         "final_response": "Researched Northwind Logistics, then identified Dana Whitfield.",
-        "execution_time_ms": 126.37,
+        "execution_time_ms": 176.0,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1457,16 +1457,16 @@
               "outcome": "unchanged",
               "record_id": "55555555-5555-5555-5555-555555555555",
               "changed_fields": [],
-              "audit_id": "ec06e6b4-bb85-4f13-a252-9a42ad59f239",
+              "audit_id": "463fdad2-03e3-4114-8e96-891d0e5f46ff",
               "message": "Contact 'Carlos Mendez' is unchanged",
               "success": true
             },
             "is_error": false,
-            "duration_ms": 23.69
+            "duration_ms": 28.29
           }
         ],
         "final_response": "Contact is unchanged; the record is already up to date in the CRM.",
-        "execution_time_ms": 23.69,
+        "execution_time_ms": 28.29,
         "audit_events_count": 1,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1506,16 +1506,16 @@
               "outcome": "unchanged",
               "record_id": "22222222-2222-2222-2222-222222222222",
               "changed_fields": [],
-              "audit_id": "5f1ef9fc-4af9-4770-8211-c88ef50c0c7b",
+              "audit_id": "0392e3ad-27c8-4864-90f8-7c5c10660fd9",
               "message": "Contact already a member of list 'Infrastructure Architects'",
               "success": true
             },
             "is_error": false,
-            "duration_ms": 27.13
+            "duration_ms": 19.74
           }
         ],
         "final_response": "Contact is already a member of list 'Infrastructure Architects'.",
-        "execution_time_ms": 27.13,
+        "execution_time_ms": 19.74,
         "audit_events_count": 1,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1558,16 +1558,16 @@
               "outcome": "rejected",
               "record_id": null,
               "changed_fields": [],
-              "audit_id": "9d8035ee-9c98-4512-9797-6f1e28d32387",
+              "audit_id": "87939f9c-4ed2-445b-a4f5-2c0987855591",
               "message": "Write tools are disabled on this server (enable_write_tools is false), so NOTHING WAS WRITTEN. This is a server configuration choice, not a problem with your request: retrying will fail identically. Tell the user that CRM writes are turned off and that an operator must enable them. Read-only tools such as crm_query and search_contact still work.",
               "success": false
             },
             "is_error": false,
-            "duration_ms": 7.97
+            "duration_ms": 31.01
           }
         ],
         "final_response": "Write operation was rejected: writes are disabled on this server.",
-        "execution_time_ms": 7.97,
+        "execution_time_ms": 31.01,
         "audit_events_count": 1,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1607,16 +1607,16 @@
               "outcome": "rejected",
               "record_id": null,
               "changed_fields": [],
-              "audit_id": "43e8ad5a-8806-4308-b2f7-4f59ff4d1a2b",
+              "audit_id": "ee63a14b-385d-403d-b8e8-22c9747c5eb0",
               "message": "Write tools are disabled on this server (enable_write_tools is false), so NOTHING WAS WRITTEN. This is a server configuration choice, not a problem with your request: retrying will fail identically. Tell the user that CRM writes are turned off and that an operator must enable them. Read-only tools such as crm_query and search_contact still work.",
               "success": false
             },
             "is_error": false,
-            "duration_ms": 10.26
+            "duration_ms": 23.53
           }
         ],
         "final_response": "Operation rejected: write tools are disabled on this server.",
-        "execution_time_ms": 10.26,
+        "execution_time_ms": 23.53,
         "audit_events_count": 1,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1660,16 +1660,16 @@
               "outcome": "dry_run",
               "record_id": null,
               "changed_fields": [],
-              "audit_id": "e0cc22ca-2108-4c6d-94aa-7798f85a3f9a",
+              "audit_id": "4cf81a7d-fef7-4cb9-935b-942a4bff3608",
               "message": "Validated an upsert of contact 'Danielle Brooks'; it would have been created or updated in the CRM. NOTHING WAS WRITTEN: this server is configured with dry_run_writes enabled. Do not report this change as done.",
               "success": false
             },
             "is_error": false,
-            "duration_ms": 6.99
+            "duration_ms": 27.12
           }
         ],
         "final_response": "Dry run simulation completed: simulated sync for Danielle Brooks. No changes were made to the database.",
-        "execution_time_ms": 6.99,
+        "execution_time_ms": 27.12,
         "audit_events_count": 1,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1709,16 +1709,16 @@
               "outcome": "dry_run",
               "record_id": "11111111-1111-1111-1111-111111111111",
               "changed_fields": [],
-              "audit_id": "42bbc2e6-ff64-48b9-bc2b-d945e1e2a8c4",
+              "audit_id": "561c792a-f326-4836-898c-d9eb84a02896",
               "message": "Validated adding contact '11111111-1111-1111-1111-111111111111' to list 'Priority Accounts'; the membership would have been created. NOTHING WAS WRITTEN: this server is configured with dry_run_writes enabled. Do not report this change as done.",
               "success": false
             },
             "is_error": false,
-            "duration_ms": 10.05
+            "duration_ms": 27.12
           }
         ],
         "final_response": "Dry run completed: simulated list addition. No changes made to list membership.",
-        "execution_time_ms": 10.05,
+        "execution_time_ms": 27.12,
         "audit_events_count": 1,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1761,11 +1761,11 @@
               "error": "[TextContent(type='text', text=\"Error executing tool sync_to_crm: 1 validation error for sync_to_crmArguments\\ncontact.email\\n  Value error, 'invalid-email-address' is not an email address. Supply a work address such as 'f***@example.com', or omit the field entirely. [type=value_error, input_value='invalid-email-address', input_type=str]\\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error\", annotations=None, meta=None)]"
             },
             "is_error": true,
-            "duration_ms": 0.72
+            "duration_ms": 2.55
           }
         ],
         "final_response": "Validation error: invalid email address. Sync failed and could not create contact.",
-        "execution_time_ms": 0.72,
+        "execution_time_ms": 2.55,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1818,11 +1818,11 @@
               "found": false
             },
             "is_error": false,
-            "duration_ms": 27.52
+            "duration_ms": 98.98
           }
         ],
         "final_response": "Unable to find contact at Northwind Logistics; no contact found.",
-        "execution_time_ms": 27.52,
+        "execution_time_ms": 98.98,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1889,11 +1889,11 @@
               "limit_reached": false
             },
             "is_error": false,
-            "duration_ms": 25.03
+            "duration_ms": 72.46
           }
         ],
         "final_response": "Elena Rostova: email elena.rostova@cloudscale.io, phone [REDACTED_PHONE].",
-        "execution_time_ms": 25.03,
+        "execution_time_ms": 72.46,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [],
@@ -1935,7 +1935,7 @@
               "company": {
                 "source": "enrichment",
                 "confidence": 1.0,
-                "retrieved_at": "2026-09-06T17:07:45.422380Z",
+                "retrieved_at": "2026-09-07T04:22:43.021235Z",
                 "domain": "northwindlogistics.com",
                 "name": "Northwind Logistics",
                 "description": "Freight visibility and multi-carrier shipment orchestration.",
@@ -1951,18 +1951,18 @@
                 "provider": "sample",
                 "live": false,
                 "matched_on": "domain",
-                "retrieved_at": "2026-09-06T17:07:45.422380Z",
+                "retrieved_at": "2026-09-07T04:22:43.021235Z",
                 "provider_record_id": "northwindlogistics.com"
               },
               "message": "Matched company 'Northwind Logistics' in this server's offline 'sample' dataset. The data is synthetic demonstration data, NOT real-world data, and must not be presented to the user as fact. Nothing was written to the CRM.",
               "found": true
             },
             "is_error": false,
-            "duration_ms": 24.89
+            "duration_ms": 64.44
           }
         ],
         "final_response": "Northwind Logistics: 1200 employees, Logistics & Supply Chain industry.",
-        "execution_time_ms": 24.89,
+        "execution_time_ms": 64.44,
         "audit_events_count": 0,
         "mutations_count": 0,
         "recorded_outcomes": [
@@ -1972,6 +1972,6 @@
       }
     }
   ],
-  "avg_latency_ms": 50.48,
+  "avg_latency_ms": 71.54,
   "provenance": {}
 }
