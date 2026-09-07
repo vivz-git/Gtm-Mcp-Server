@@ -1,6 +1,6 @@
 # GTM MCP Agent Evaluation Report
 
-**Timestamp**: `2026-09-06T13:51:31.431565+00:00`  
+**Timestamp**: `2026-09-06T17:07:45.448246+00:00`  
 **Mode**: `deterministic`  
 **Total Scenarios**: `28`  
 **Passed**: `28` (`100.0%`)  

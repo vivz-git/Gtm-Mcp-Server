@@ -70,40 +70,78 @@ A scenario is marked **Passed** if and only if:
 
 ## 4. Deterministic vs. Live Evaluation
 
-- **Deterministic Mode** (default): Runs against in-memory doubles (`InMemoryCrmRepository`, `RecordingAuditSink`) and the offline synthetic dataset (`SampleCompanyProvider`, `SampleContactProvider`). Fully reproducible, zero network calls, zero API costs.
-- **Live Mode** (optional): Exercises real live providers (e.g. Hunter API) and live PostgreSQL CRM instances.
+Two modes, two questions, two reports. They are **never averaged** (D-026).
+
+| | Deterministic | Live |
+| :--- | :--- | :--- |
+| **Question it answers** | Does the server make correct behaviour expressible, and does the scorer detect incorrect behaviour? | Does a real model actually choose the correct behaviour? |
+| **Agent** | `DeterministicAgentAdapter` — scripted, plus deliberate fault modes | A real model, through a real MCP host (D-024) |
+| **MCP transport** | In-memory `Client` against a server object in-process | stdio subprocess the host spawns: `uv run gtm-mcp-server` |
+| **CRM** | `InMemoryCrmRepository` + `RecordingAuditSink` | Seeded PostgreSQL, reset before the run (D-027) |
+| **Enrichment** | Offline sample dataset | Offline sample dataset — pinned, so no run can spend a credit |
+| **Scenarios** | 28 | A 12-scenario subset covering all 11 behavioural classes |
+| **Reproducible** | Yes, byte for byte | **No.** A rerun can score differently |
+| **Cost** | Zero | One model call per scenario |
+| **Reports** | `results/latest.{json,md}` | `results/live-latest.{json,md}`, plus `results/comparison.md` |
+
+What is *identical* in both: the scenarios, the golden expectations, the trace shape
+(`eval/tracing.py`) and the scoring engine (`eval/scoring.py`). Only the adapter differs.
+
+A 100% deterministic score is a statement about the *server*, not about any agent. Read the live
+report for the second claim, and `comparison.md` for the gap between them.
+
+### The live subset
+
+Twelve scenarios, one per behaviour worth paying a model call to observe: CRM-first lookup,
+conditional check-then-enrich, enrichment, CRM query, enrichment + sync, sync + list add,
+idempotent `unchanged`, write rejection, dry run, failure handling, read/write boundary, and a
+request for a record that does not exist. Scenarios keyed to hard-coded fake UUIDs are excluded,
+because in a live run the agent must discover identifiers for itself.
+
+### Isolation of a live run
+
+The agent gets the six GTM tools and nothing else: built-in file, shell and web tools are
+disabled, settings sources are suppressed so no `CLAUDE.md` is loaded, and the run happens in a
+temporary directory outside this repository. Without that, an agent could answer a CRM question by
+reading the implementation it is being measured against. The system prompt states a role and
+carries no tool guidance; it is reproduced verbatim in every live report.
 
 ---
 
 ## 5. Running Evaluations
 
-Run the complete deterministic evaluation suite:
+Deterministic suite — reproducible, free, no model:
 
 ```bash
-uv run python -m eval.runner
-```
-
-Run a specific scenario by ID:
-
-```bash
+uv run python -m eval.runner                          # all 28 scenarios
 uv run python -m eval.runner --scenario crm-first-known
+uv run pytest -m eval                                 # the harness's own tests
 ```
 
-Run via Pytest (isolated under `eval` marker):
+Live suite — **calls a real model and costs money**. Requires the Claude Code CLI on `PATH`, `uv`,
+and a reachable PostgreSQL:
 
 ```bash
-uv run pytest -m eval
+uv run python -m eval.live                            # the 12-scenario subset, DB reset first
+uv run python -m eval.live --scenarios dryrun-sync rejection-sync-disabled
+uv run python -m eval.live --model claude-sonnet-5 --max-budget-usd 1.00
+uv run python -m eval.live --no-reset-db              # faster; results stop being reproducible
 ```
 
-*Note: The default test gate (`pytest -m "not eval"`) remains fast, isolated, and deterministic.*
+The default test gate (`pytest -m "not integration"`) never invokes a model.
 
 ---
 
 ## 6. Generated Reports
 
-Every evaluation run outputs:
-- **`eval/results/latest.json`**: Full machine-readable tool call traces, execution timings, violations, and category metrics.
-- **`eval/results/latest.md`**: Summary dashboard with status badges, aggregate category scores, and per-scenario breakdowns.
+- **`eval/results/latest.{json,md}`** — the deterministic baseline: full tool-call traces,
+  timings, violations and category metrics.
+- **`eval/results/live-latest.{json,md}`** — the real-model run. Carries its own provenance block
+  naming the host, the models observed, the MCP connection method and the system prompt, and is
+  labelled as non-reproducible.
+- **`eval/results/comparison.md`** — the two side by side, with the deterministic baseline
+  restricted to the scenarios the live subset also ran. Reports a delta per axis; never a merged
+  score.
 
 ---
 
@@ -114,3 +152,28 @@ All evaluation traces pass through `eval/redaction.py`, which recursively saniti
 - Phone numbers (`[REDACTED_PHONE]`)
 - Authorization headers (`Bearer [REDACTED_TOKEN]`)
 - API keys and passwords (`[REDACTED_SECRET]`)
+
+A live agent's free-text answer is handled differently, and deliberately (D-028): it is **scored
+raw** and **persisted redacted**. Golden expectations match names and email addresses in that text,
+so masking them before scoring would let the redaction pass decide whether a phrase matched.
+Phone numbers and credentials have no scoring role and are masked. The corpus is entirely
+synthetic — no real person's data is in this repository or in any report it produces.
+
+---
+
+## 8. What a live score does and does not mean
+
+A live run measures one model, on one day, under one system prompt, on twelve scenarios. It is
+evidence, not a guarantee. Two known limitations of the *method* (D-029), both left in place rather
+than tuned away:
+
+- **Literal-phrase matching under-credits a correct paraphrase.** An agent that says "the sync did
+  not complete, nothing was written" is behaving correctly, but loses points if the golden list
+  wanted the word "simulated".
+- **A golden path written for a scripted agent can encode a worse behaviour than a careful model
+  chooses.** In `failure-empty-search` the expected call is `search_contact` for a person whose name
+  is unknown; a model that declines — correctly, per the tool's own description — scores zero on
+  tool selection for it.
+
+Golden expectations are never edited in response to a live score. Doing so is how an evaluation
+harness stops measuring anything.

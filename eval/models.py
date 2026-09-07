@@ -137,6 +137,11 @@ class ScenarioTrace(BaseModel):
     recorded_outcomes: list[str] = Field(
         default_factory=list, description="Recorded write outcomes from tool payloads."
     )
+    agent_metadata: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Provenance of the agent that produced this trace (model, session, cost). "
+        "Empty for deterministic runs, where there is no model to attribute.",
+    )
 
 
 class CategoryScores(BaseModel):
@@ -204,3 +209,14 @@ class EvaluationReport(BaseModel):
     category_metrics: dict[str, dict[str, float]]
     aggregate_scores: CategoryScores
     scenarios: list[ScenarioResult]
+    avg_latency_ms: float = Field(
+        default=0.0,
+        description="Mean wall-clock duration of a scenario run. Meaningful for live runs, "
+        "where it is the agent's end-to-end latency.",
+    )
+    provenance: dict[str, str] = Field(
+        default_factory=dict,
+        description="What produced this report: agent, host, MCP connection, data sources. "
+        "Reported verbatim so a deterministic and a live report are never mistaken "
+        "for one another.",
+    )

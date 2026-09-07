@@ -4,12 +4,13 @@
       "command": "uv",
       "args": [
         "--directory",
-        "C:\absolute\path\to\GTM_MCP_PROJ",
+        "C:/absolute/path/to/GTM_MCP_PROJ",
         "run",
         "gtm-mcp-server"
       ],
       "env": {
-        "GTM_DATABASE_URL": "postgresql+asyncpg://gtm:gtm@localhost:5432/gtm",
+        "GTM_ENABLE_WRITE_TOOLS": "false",
+        "GTM_ENRICHMENT_PROVIDER": "sample",
         "GTM_LOG_LEVEL": "INFO"
       }
     }

@@ -20,11 +20,11 @@ from eval.models import (
     EvaluationReport,
     Scenario,
     ScenarioResult,
-    ScenarioTrace,
 )
 from eval.report import save_report
 from eval.scenarios import SCENARIOS
 from eval.scoring import Scorer
+from eval.tracing import build_trace
 from gtm_mcp.context import AppContext
 from gtm_mcp.domain.models import Contact, RecordSource
 from gtm_mcp.providers.sample import SampleCompanyProvider, SampleContactProvider
@@ -99,38 +99,11 @@ async def run_scenario(scenario: Scenario, adapter: AgentAdapter | None = None) 
     async with Client(server, raise_exceptions=False) as client:
         tool_traces, final_response = await adapter.run_scenario(scenario, client)
 
-    # Extract outcomes from tool results
-    recorded_outcomes: list[str] = []
-    for call in tool_traces:
-        if call.is_error:
-            recorded_outcomes.append("failed")
-        elif isinstance(call.result, dict):
-            if "outcome" in call.result:
-                recorded_outcomes.append(str(call.result["outcome"]).lower())
-            elif call.result.get("found") is True:
-                recorded_outcomes.append("found")
-            elif call.result.get("found") is False:
-                recorded_outcomes.append("not_found")
-            elif "matches" in call.result:
-                count = len(call.result["matches"])
-                recorded_outcomes.append(f"found_{count}")
-
-    mutations_count = sum(
-        1
-        for call in tool_traces
-        if isinstance(call.result, dict) and call.result.get("outcome") in ("created", "updated")
-    )
-
-    trace = ScenarioTrace(
-        scenario_id=scenario.id,
-        category=scenario.category,
-        intent=scenario.intent,
-        tool_calls=tool_traces,
-        final_response=final_response,
-        execution_time_ms=sum(t.duration_ms for t in tool_traces),
+    trace = build_trace(
+        scenario,
+        tool_traces,
+        final_response,
         audit_events_count=len(sink.events),
-        mutations_count=mutations_count,
-        recorded_outcomes=recorded_outcomes,
     )
 
     return Scorer.score_scenario(scenario, trace)
@@ -210,6 +183,9 @@ async def run_evaluation(
         category_metrics=category_metrics,
         aggregate_scores=aggregates,
         scenarios=results,
+        avg_latency_ms=(
+            round(sum(r.trace.execution_time_ms for r in results) / total, 2) if total else 0.0
+        ),
     )
 
     return report

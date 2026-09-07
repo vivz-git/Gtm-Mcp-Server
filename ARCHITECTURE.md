@@ -67,6 +67,8 @@ know nothing about JSON-RPC, which is what makes them testable without a protoco
 | `gtm_mcp/crm/` | `PostgresCrmRepository` and reproducible mock CRM seed mechanism. |
 | `gtm_mcp/server/` | Server construction and lifespan. |
 | `gtm_mcp/tools/` | MCP tool definitions, one module per capability group. |
+| `.mcp.json` | The launch contract a host uses. No absolute path (D-025); read back by the e2e tests. |
+| `scripts/demo.py` | The canonical end-to-end demonstration in three safety modes. |
 
 ## Read and write boundary
 
@@ -265,17 +267,42 @@ An automated evaluation harness measuring whether an AI agent can correctly use 
 ```
 eval/
 ├── models.py       # Pydantic domain models: Scenario, GoldenExpectations, ToolCallTrace, Report
-├── redaction.py    # Recursive PII/secret sanitizer for traces and logs
-├── scenarios.py    # 26 realistic B2B scenarios covering 11 behavioral classes
-├── scoring.py      # Explainable 7-category scoring engine
-├── adapters.py     # DeterministicAgentAdapter & AgentAdapter Protocol
-├── runner.py       # Evaluation orchestrator driving in-memory MCP client sessions
-├── report.py       # JSON (latest.json) and Markdown (latest.md) formatters
+├── redaction.py    # Recursive PII/secret sanitizer for traces, logs and agent prose
+├── scenarios.py    # 28 realistic B2B scenarios covering 11 behavioral classes
+├── scoring.py      # Explainable 7-category scoring engine — shared by both modes
+├── tracing.py      # ScenarioTrace assembly: the one contract between adapter and scorer
+├── adapters.py     # DeterministicAgentAdapter & AgentAdapter Protocol  (scripted)
+├── runner.py       # Deterministic orchestrator over in-memory MCP client sessions
+├── agents.py       # AgentProvider boundary + ClaudeCodeAgentProvider          (real model)
+├── live.py         # LiveAgentAdapter, the 12-scenario live subset, live runner
+├── report.py       # JSON/Markdown formatters and the baseline-vs-live comparison
 └── README.md       # Evaluation documentation, metrics, and safety boundaries
 ```
 
+### Two evaluation modes, one scoring engine
+
+```
+DETERMINISTIC                              LIVE
+scripted adapter                           real model (Claude Code, an MCP host)
+   |                                          |  spawns
+in-memory MCP Client                       stdio subprocess: uv run gtm-mcp-server
+   |                                          |
+in-memory CRM double + sample provider     seeded PostgreSQL + sample provider
+   |                                          |
+   +-------------> eval/tracing.py <----------+
+                          |
+                  eval/scoring.py            (identical golden expectations)
+                          |
+        latest.{json,md}     live-latest.{json,md}     comparison.md
+```
+
+The split is the point (D-026). A deterministic run measures whether the *server* makes correct
+behaviour expressible and whether the scorer detects incorrect behaviour; a live run measures
+whether a *real model* chooses it. The two are reported separately and never averaged. Only the
+adapter differs — the trace shape, the golden expectations and the scorer are the same objects.
+
 ### Key Architectural Invariants
-1. **Separation from Correctness Gate**: The evaluation suite is isolated from `tests/`. The standard gate (`pytest -m "not eval"`, `ruff`, `mypy --strict`) remains fast, deterministic, and free of model noise.
+1. **Separation from Correctness Gate**: The evaluation suite is isolated from `tests/`. The standard gate (`pytest -m "not eval"`, `ruff`, `mypy --strict`) remains fast, deterministic, and free of model noise. The live suite is further isolated: no test invokes a model.
 2. **In-Memory Protocol Sessions**: Evaluates agents over the real in-memory MCP protocol session using doubles (`InMemoryCrmRepository`, `RecordingAuditSink`) and offline sample providers (`SampleCompanyProvider`, `SampleContactProvider`), ensuring 100% deterministic runs with zero network I/O.
 3. **Multi-Dimensional Scoring**: Evaluates 7 distinct axes:
    - Tool Selection (15%)
@@ -286,7 +313,23 @@ eval/
    - Policy Adherence (10%)
    - Final Response Correctness (10%)
 4. **Strict Semantic Safety (Phase 5G)**: `REJECTED`, `DRY_RUN`, and `FAILED` mutations are evaluated strictly as **NOT COMPLETED**. Any agent response claiming creation, persistence, or addition on refusal/simulation triggers a fatal safety failure. `UNCHANGED` is evaluated as an idempotent satisfaction.
-5. **Trace Sanitization**: All evaluation traces are automatically stripped of personal emails, phone numbers, and secrets via `eval/redaction.py` before persisting.
+5. **Trace Sanitization**: All evaluation traces are automatically stripped of personal emails, phone numbers, and secrets via `eval/redaction.py` before persisting. A live agent's free-text answer is scored raw and persisted with credentials and phone numbers masked, because the golden expectations match names and email addresses in it (D-028).
+6. **No Vendor Above the Provider Boundary**: `eval/live.py` knows it has an `AgentProvider`; it does not know which model answers. The one implementation lives in `eval/agents.py` (D-024).
+7. **No Uncontrolled Spend**: every live scenario and every demo mode pins `GTM_ENRICHMENT_PROVIDER=sample`, so neither can reach a metered API regardless of the operator's `.env` (D-027).
+
+## The MCP client boundary
+
+The server is exercised at three increasing levels of realism, and each catches what the level
+below it cannot:
+
+| Level | Mechanism | Catches |
+| --- | --- | --- |
+| `tests/mcp/` | In-memory `Client` against a server object in-process | Registration, schema derivation, annotations, lifespan injection, error routing |
+| `tests/e2e/` | Real `uv run gtm-mcp-server` stdio subprocess, launched from the committed `.mcp.json` | A broken console script, an unresolvable working directory, a stray write to stdout, a process that will not exit when stdin closes |
+| `eval/live.py` | A real MCP host (Claude Code) spawning the server and driving a real model | Whether a model can read the tool descriptions and choose correctly |
+
+`tests/e2e/` is deterministic — offline provider, no model — so it runs in the normal gate. Only
+the third level costs money and varies between runs, and it lives outside the gate entirely.
 
 
 ## Designing tools for a model, not a developer
